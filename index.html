@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>DOS Camera Dither</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <video id="video" autoplay playsinline style="display:none;"></video>
+    <canvas id="canvas"></canvas>
+    <div id="controls">
+        <button id="startBtn">Start Camera</button>
+        <button id="flipBtn">Flip Camera</button>
+        <select id="resolutionSelect">
+            <option value="320x200">320x200 (VGA)</option>
+            <option value="640x480">640x480</option>
+        </select>
+        <div id="fps">FPS: --</div>
+    </div>
+
+    <script src="palette.js"></script>
+    <script src="dither.js"></script>
+    <script src="camera.js"></script>
+</body>
+</html>
