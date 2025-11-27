@@ -39,6 +39,28 @@ function interpolateColorsCustom(color1, color2, steps) {
     return palette;
 }
 
+// Helper function to blend two palettes
+function blendPalettes(palette1, palette2, ratio) {
+    // ratio is weight of palette1 (0-1), palette2 gets (1-ratio)
+    const steps = Math.max(palette1.length, palette2.length);
+    const blended = [];
+
+    for (let i = 0; i < steps; i++) {
+        const idx1 = Math.min(i, palette1.length - 1);
+        const idx2 = Math.min(i, palette2.length - 1);
+        const color1 = palette1[idx1];
+        const color2 = palette2[idx2];
+
+        const r = Math.round(color1[0] * ratio + color2[0] * (1 - ratio));
+        const g = Math.round(color1[1] * ratio + color2[1] * (1 - ratio));
+        const b = Math.round(color1[2] * ratio + color2[2] * (1 - ratio));
+
+        blended.push([r, g, b]);
+    }
+
+    return blended;
+}
+
 const PALETTES = {
     VGA: [
         [0, 0, 0],          // 0: Black
@@ -74,19 +96,25 @@ const PALETTES = {
         [0, 0, 0],          // Black
         [255, 176, 0]       // Amber
     ],
-    AMBER_STEP: interpolateColors([0, 0, 0], [255, 176, 0], 16),
-    AMBER_STEP_GAMMA: interpolateColorsGamma([0, 0, 0], [255, 176, 0], 16, 2.2),
-    AMBER_STEP_8: interpolateColors([0, 0, 0], [255, 176, 0], 8),
-    AMBER_STEP_BRIGHT: interpolateColors([20, 10, 0], [255, 200, 0], 16),
-    AMBER_STEP_CUSTOM: interpolateColorsCustom([0, 0, 0], [255, 176, 0], 16),
-    AMBER_STEP_ENHANCED: interpolateColorsGamma([0, 0, 0], [255, 200, 0], 16, 2.2),
+    // Generate intermediate palettes first
+    _AMBER_GRADIENT: interpolateColors([0, 0, 0], [255, 176, 0], 2),
+    _AMBER_GAMMA: interpolateColorsGamma([0, 0, 0], [255, 176, 0], 2, 2.2)
+};
+
+// Create mixed palettes after base palettes are defined
+PALETTES.AMBER_AA = blendPalettes(PALETTES._AMBER_GRADIENT, PALETTES._AMBER_GAMMA, 0.5); // 50:50
+PALETTES.AMBER_AG = blendPalettes(PALETTES._AMBER_GRADIENT, PALETTES._AMBER_GAMMA, 0.3); // 30:70
+PALETTES.AMBER_GG = blendPalettes(PALETTES._AMBER_GRADIENT, PALETTES._AMBER_GAMMA, 0.7); // 70:30
+
+// Continue with other palettes
+Object.assign(PALETTES, {
     GREEN_PHOSPHOR: [
         [0, 0, 0],          // Black
         [0, 255, 0]         // Green
     ],
     GREEN_STEP: interpolateColors([0, 0, 0], [0, 255, 0], 16),
     GRAYSCALE: interpolateColors([0, 0, 0], [255, 255, 255], 16)
-};
+});
 
 // Current palette (can be changed)
 let currentPalette = PALETTES.VGA;

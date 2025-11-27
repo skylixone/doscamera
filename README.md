@@ -64,6 +64,15 @@ This project follows semantic versioning for pre-1.0 software:
 
 ## Changelog
 
+### v0.2.2 (2025-11-27)
+- Removed all experimental AMBER palettes (STEP, GAMMA, 8, BRIGHT, CUSTOM, ENHANCED)
+- Added 3 new optimized AMBER palette blends:
+  - **AMBER_AA**: 50:50 blend of linear gradient and gamma-corrected
+  - **AMBER_AG**: 30:70 blend (more gamma contrast)
+  - **AMBER_GG**: 70:30 blend (more linear gradient)
+- Added `blendPalettes()` helper function for mixing palettes
+- Simplified palette options based on testing feedback
+
 ### v0.2.1 (2025-11-27)
 - Added 5 new AMBER palette variations for contrast testing:
   - **AMBER_STEP_GAMMA**: Non-linear gamma 2.2 interpolation for enhanced contrast
