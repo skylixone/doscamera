@@ -64,6 +64,13 @@ This project follows semantic versioning for pre-1.0 software:
 
 ## Changelog
 
+### v0.2.5 (2025-11-27)
+- Fixed **AMBER_FIRE** camera freeze by reversing array order
+  - Root cause: Palette was ordered bright→dark (descending) instead of dark→bright (ascending)
+  - All other palettes go from black to light colors
+  - Reversed order now matches convention: black → dark red → bright orange-red
+  - Camera feed now works properly
+
 ### v0.2.4 (2025-11-27)
 - Removed **AMBER_CORBIJN** and **NEON_CITY** (both caused camera freeze requiring page refresh)
 - Added **AMBER_FIRE**: 6-color fire/ember gradient palette

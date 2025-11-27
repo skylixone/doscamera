@@ -98,12 +98,12 @@ const PALETTES = {
     ],
     // Extended amber palette with fire/ember gradient
     AMBER_FIRE: [
-        [255, 76, 0],       // Bright orange-red
-        [224, 48, 0],       // Vivid orange-red
-        [179, 39, 0],       // Deep orange-red
-        [137, 0, 0],        // Dark red
+        [0, 0, 0],          // Black
         [71, 0, 0],         // Very dark red
-        [0, 0, 0]           // Black
+        [137, 0, 0],        // Dark red
+        [179, 39, 0],       // Deep orange-red
+        [224, 48, 0],       // Vivid orange-red
+        [255, 76, 0]        // Bright orange-red
     ],
     // Continue with other palettes
     GREEN_PHOSPHOR: [
