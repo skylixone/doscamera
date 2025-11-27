@@ -64,6 +64,17 @@ This project follows semantic versioning for pre-1.0 software:
 
 ## Changelog
 
+### v0.2.3 (2025-11-27)
+- Removed AMBER_AA, AMBER_AG, AMBER_GG (2-color blends showed minimal visual difference)
+- Added **AMBER_CORBIJN**: 6-tone photographic amber palette inspired by Anton Corbijn's work
+  - Rich shadow detail with blacks, dark browns, and burnt umbers
+  - Smooth midtone transition through burnt orange and warm amber
+  - Bright amber highlights for specular detail
+  - Significantly more tonal range than 2-color AMBER
+- Added **NEON_CITY**: 5-color vibrant palette (black, orange-red, deep blue, bright yellow, cyan-blue)
+- Analysis: Previous AMBER variations failed because blending 2-color palettes yields imperceptible differences
+- Solution: Multi-tone palettes with 5-6 carefully chosen intermediate shades
+
 ### v0.2.2 (2025-11-27)
 - Removed all experimental AMBER palettes (STEP, GAMMA, 8, BRIGHT, CUSTOM, ENHANCED)
 - Added 3 new optimized AMBER palette blends:

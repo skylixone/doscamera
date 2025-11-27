@@ -96,25 +96,31 @@ const PALETTES = {
         [0, 0, 0],          // Black
         [255, 176, 0]       // Amber
     ],
-    // Generate intermediate palettes first
-    _AMBER_GRADIENT: interpolateColors([0, 0, 0], [255, 176, 0], 2),
-    _AMBER_GAMMA: interpolateColorsGamma([0, 0, 0], [255, 176, 0], 2, 2.2)
-};
-
-// Create mixed palettes after base palettes are defined
-PALETTES.AMBER_AA = blendPalettes(PALETTES._AMBER_GRADIENT, PALETTES._AMBER_GAMMA, 0.5); // 50:50
-PALETTES.AMBER_AG = blendPalettes(PALETTES._AMBER_GRADIENT, PALETTES._AMBER_GAMMA, 0.3); // 30:70
-PALETTES.AMBER_GG = blendPalettes(PALETTES._AMBER_GRADIENT, PALETTES._AMBER_GAMMA, 0.7); // 70:30
-
-// Continue with other palettes
-Object.assign(PALETTES, {
+    // Anton Corbijn-inspired photographic amber palette
+    AMBER_CORBIJN: [
+        [0, 0, 0],          // Pure black (deep shadows)
+        [40, 20, 0],        // Dark brown (shadow detail)
+        [90, 45, 0],        // Burnt umber (midtone shadows)
+        [160, 80, 0],       // Burnt orange (midtones)
+        [220, 130, 0],      // Warm amber (highlights)
+        [255, 180, 20]      // Bright amber (specular highlights)
+    ],
+    // Neon city palette - vibrant 5-color scheme
+    NEON_CITY: [
+        [1, 1, 1],          // Near-black
+        [255, 76, 0],       // Bright orange-red
+        [41, 51, 155],      // Deep blue
+        [253, 231, 76],     // Bright yellow
+        [116, 164, 188]     // Muted cyan-blue
+    ],
+    // Continue with other palettes
     GREEN_PHOSPHOR: [
         [0, 0, 0],          // Black
         [0, 255, 0]         // Green
     ],
     GREEN_STEP: interpolateColors([0, 0, 0], [0, 255, 0], 16),
     GRAYSCALE: interpolateColors([0, 0, 0], [255, 255, 255], 16)
-});
+};
 
 // Current palette (can be changed)
 let currentPalette = PALETTES.VGA;
