@@ -64,6 +64,15 @@ This project follows semantic versioning for pre-1.0 software:
 
 ## Changelog
 
+### v0.2.6 (2025-11-27)
+- Restored **AMBER_CORBIJN** and **NEON_CITY** palettes with correct color ordering
+- **AMBER_CORBIJN**: 6-tone photographic amber (black → dark brown → burnt umber → burnt orange → warm amber → bright amber)
+  - Ordered dark to bright, inspired by Anton Corbijn's photography
+- **NEON_CITY**: 5-color vibrant palette ordered by luminance
+  - Near-black → deep blue → muted cyan-blue → bright orange-red → bright yellow
+  - Colors reordered from original to prevent freeze
+- Both palettes now work correctly with camera feed
+
 ### v0.2.5 (2025-11-27)
 - Fixed **AMBER_FIRE** camera freeze by reversing array order
   - Root cause: Palette was ordered bright→dark (descending) instead of dark→bright (ascending)
