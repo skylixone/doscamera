@@ -105,23 +105,22 @@ const PALETTES = {
         [224, 48, 0],       // Vivid orange-red
         [255, 76, 0]        // Bright orange-red
     ],
-    // Anton Corbijn-inspired photographic amber palette (dark to bright)
-    AMBER_CORBIJN: [
-        [0, 0, 0],          // Pure black (deep shadows)
-        [40, 20, 0],        // Dark brown (shadow detail)
-        [90, 45, 0],        // Burnt umber (midtone shadows)
-        [160, 80, 0],       // Burnt orange (midtones)
-        [220, 130, 0],      // Warm amber (highlights)
-        [255, 180, 20]      // Bright amber (specular highlights)
-    ],
-    // Neon city palette - ordered by luminance (dark to bright)
-    NEON_CITY: [
-        [1, 1, 1],          // Near-black
-        [41, 51, 155],      // Deep blue
-        [116, 164, 188],    // Muted cyan-blue
-        [255, 76, 0],       // Bright orange-red
-        [253, 231, 76]      // Bright yellow
-    ],
+    // TODO: Debug camera freeze - these palettes cause freeze despite correct ordering
+    // AMBER_CORBIJN: [
+    //     [0, 0, 0],          // Pure black (deep shadows)
+    //     [40, 20, 0],        // Dark brown (shadow detail)
+    //     [90, 45, 0],        // Burnt umber (midtone shadows)
+    //     [160, 80, 0],       // Burnt orange (midtones)
+    //     [220, 130, 0],      // Warm amber (highlights)
+    //     [255, 180, 20]      // Bright amber (specular highlights)
+    // ],
+    // NEON_CITY: [
+    //     [1, 1, 1],          // Near-black
+    //     [41, 51, 155],      // Deep blue
+    //     [116, 164, 188],    // Muted cyan-blue
+    //     [255, 76, 0],       // Bright orange-red
+    //     [253, 231, 76]      // Bright yellow
+    // ],
     // Continue with other palettes
     GREEN_PHOSPHOR: [
         [0, 0, 0],          // Black
@@ -137,11 +136,25 @@ let currentPalette = PALETTES.VGA;
 // Pre-compute squared distances for palette matching
 // Euclidean distance in RGB space: sqrt((r1-r2)^2 + (g1-g2)^2 + (b1-b2)^2)
 function findClosestColor(r, g, b) {
+    // Debug: Check if currentPalette is valid
+    if (!currentPalette || !Array.isArray(currentPalette) || currentPalette.length === 0) {
+        console.error('Invalid currentPalette:', currentPalette);
+        return 0;
+    }
+
     let minDist = Infinity;
     let closestIdx = 0;
 
     for (let i = 0; i < currentPalette.length; i++) {
-        const [pr, pg, pb] = currentPalette[i];
+        const color = currentPalette[i];
+
+        // Debug: Check if color is valid
+        if (!color || !Array.isArray(color) || color.length < 3) {
+            console.error('Invalid color at index', i, ':', color);
+            continue;
+        }
+
+        const [pr, pg, pb] = color;
         const dist = (r - pr) ** 2 + (g - pg) ** 2 + (b - pb) ** 2;
 
         if (dist < minDist) {

@@ -64,6 +64,19 @@ This project follows semantic versioning for pre-1.0 software:
 
 ## Changelog
 
+### v0.2.7 (2025-11-27)
+- **Debug mode**: Temporarily disabled AMBER_CORBIJN and NEON_CITY (still freezing despite correct ordering)
+- Added comprehensive debugging instrumentation:
+  - Palette validation checks in `findClosestColor()` with error logging
+  - Color array validation for each palette color
+  - Palette switch logging with details (name, color count, first color)
+  - Frame timing measurement with slow frame warnings (>100ms)
+  - Performance monitoring using `performance.now()` for dithering process
+- Removed frozen palettes from dropdown
+- Kept palette definitions commented out in code for debugging
+- **Investigation needed**: Freeze occurs even with proper dark→bright ordering
+- Possible causes to investigate: color value ranges, palette size, color space issues
+
 ### v0.2.6 (2025-11-27)
 - Restored **AMBER_CORBIJN** and **NEON_CITY** palettes with correct color ordering
 - **AMBER_CORBIJN**: 6-tone photographic amber (black → dark brown → burnt umber → burnt orange → warm amber → bright amber)

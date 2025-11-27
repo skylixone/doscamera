@@ -41,14 +41,24 @@ async function initCamera() {
 }
 
 function processFrame() {
+    const frameStart = performance.now();
+
     // Draw video frame to canvas at target resolution
     ctx.drawImage(video, 0, 0, currentWidth, currentHeight);
 
     // Get pixel data
     const imageData = ctx.getImageData(0, 0, currentWidth, currentHeight);
 
+    const ditherStart = performance.now();
     // Apply dithering and palette reduction
     applyDithering(imageData, currentWidth, currentHeight);
+    const ditherEnd = performance.now();
+
+    // Log slow frames (>100ms for dithering)
+    const ditherTime = ditherEnd - ditherStart;
+    if (ditherTime > 100) {
+        console.warn('Slow dither detected:', ditherTime.toFixed(2) + 'ms', 'Palette:', currentPalette?.length, 'colors');
+    }
 
     // Put processed data back
     ctx.putImageData(imageData, 0, 0);
@@ -113,8 +123,17 @@ document.getElementById('resolutionSelect').addEventListener('change', (e) => {
 
 document.getElementById('paletteSelect').addEventListener('change', (e) => {
     const paletteName = e.target.value;
-    currentPalette = PALETTES[paletteName];
-    console.log('Palette switched to:', paletteName);
+    console.log('Switching palette to:', paletteName);
+
+    const newPalette = PALETTES[paletteName];
+    if (!newPalette) {
+        console.error('Palette not found:', paletteName);
+        return;
+    }
+
+    console.log('Palette loaded:', paletteName, 'Colors:', newPalette.length, 'First color:', newPalette[0]);
+    currentPalette = newPalette;
+    console.log('Palette switch complete');
 });
 
 let uiHidden = false;
