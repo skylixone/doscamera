@@ -64,6 +64,16 @@ This project follows semantic versioning for pre-1.0 software:
 
 ## Changelog
 
+### v0.2.1 (2025-11-27)
+- Added 5 new AMBER palette variations for contrast testing:
+  - **AMBER_STEP_GAMMA**: Non-linear gamma 2.2 interpolation for enhanced contrast
+  - **AMBER_STEP_8**: 8-step gradient for dramatic banding effect
+  - **AMBER_STEP_BRIGHT**: Adjusted endpoints (dark brown to bright amber)
+  - **AMBER_STEP_CUSTOM**: S-curve interpolation with clustered extremes
+  - **AMBER_STEP_ENHANCED**: Gamma + bright endpoint combo (recommended)
+- Added gamma correction and custom curve interpolation functions
+- All variations available for A/B testing before trimming
+
 ### v0.2.0 (2025-11-27)
 - Added 480×270 resolution option (16:9 aspect ratio)
 - Camera now starts automatically on page load

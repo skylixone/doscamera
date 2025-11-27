@@ -1,8 +1,36 @@
-// Helper function to interpolate colors
+// Helper function to interpolate colors (linear)
 function interpolateColors(color1, color2, steps) {
     const palette = [];
     for (let i = 0; i < steps; i++) {
         const t = i / (steps - 1);
+        const r = Math.round(color1[0] + (color2[0] - color1[0]) * t);
+        const g = Math.round(color1[1] + (color2[1] - color1[1]) * t);
+        const b = Math.round(color1[2] + (color2[2] - color1[2]) * t);
+        palette.push([r, g, b]);
+    }
+    return palette;
+}
+
+// Helper function to interpolate colors with gamma correction (non-linear)
+function interpolateColorsGamma(color1, color2, steps, gamma = 2.2) {
+    const palette = [];
+    for (let i = 0; i < steps; i++) {
+        const t = Math.pow(i / (steps - 1), gamma);
+        const r = Math.round(color1[0] + (color2[0] - color1[0]) * t);
+        const g = Math.round(color1[1] + (color2[1] - color1[1]) * t);
+        const b = Math.round(color1[2] + (color2[2] - color1[2]) * t);
+        palette.push([r, g, b]);
+    }
+    return palette;
+}
+
+// Helper function for custom curve with clustered extremes
+function interpolateColorsCustom(color1, color2, steps) {
+    const palette = [];
+    for (let i = 0; i < steps; i++) {
+        // S-curve: cluster values at extremes, spread middle
+        let t = i / (steps - 1);
+        t = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
         const r = Math.round(color1[0] + (color2[0] - color1[0]) * t);
         const g = Math.round(color1[1] + (color2[1] - color1[1]) * t);
         const b = Math.round(color1[2] + (color2[2] - color1[2]) * t);
@@ -47,6 +75,11 @@ const PALETTES = {
         [255, 176, 0]       // Amber
     ],
     AMBER_STEP: interpolateColors([0, 0, 0], [255, 176, 0], 16),
+    AMBER_STEP_GAMMA: interpolateColorsGamma([0, 0, 0], [255, 176, 0], 16, 2.2),
+    AMBER_STEP_8: interpolateColors([0, 0, 0], [255, 176, 0], 8),
+    AMBER_STEP_BRIGHT: interpolateColors([20, 10, 0], [255, 200, 0], 16),
+    AMBER_STEP_CUSTOM: interpolateColorsCustom([0, 0, 0], [255, 176, 0], 16),
+    AMBER_STEP_ENHANCED: interpolateColorsGamma([0, 0, 0], [255, 200, 0], 16, 2.2),
     GREEN_PHOSPHOR: [
         [0, 0, 0],          // Black
         [0, 255, 0]         // Green
