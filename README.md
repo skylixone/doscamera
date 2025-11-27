@@ -64,6 +64,14 @@ This project follows semantic versioning for pre-1.0 software:
 
 ## Changelog
 
+### v0.2.4 (2025-11-27)
+- Removed **AMBER_CORBIJN** and **NEON_CITY** (both caused camera freeze requiring page refresh)
+- Added **AMBER_FIRE**: 6-color fire/ember gradient palette
+  - Colors: #FF4C00, #E03000, #B32700, #890000, #470000, #000000
+  - Gradient from bright orange-red through dark red to black
+  - Based on original AMBER palette, extended with specified color stops
+  - Simpler implementation should avoid freeze issues
+
 ### v0.2.3 (2025-11-27)
 - Removed AMBER_AA, AMBER_AG, AMBER_GG (2-color blends showed minimal visual difference)
 - Added **AMBER_CORBIJN**: 6-tone photographic amber palette inspired by Anton Corbijn's work

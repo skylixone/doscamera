@@ -91,27 +91,19 @@ const PALETTES = {
         [255, 0, 0],        // Red
         [0, 255, 0],        // Green
         [255, 255, 0]       // Yellow
-    ],
+    ], 
     AMBER: [
         [0, 0, 0],          // Black
         [255, 176, 0]       // Amber
     ],
-    // Anton Corbijn-inspired photographic amber palette
-    AMBER_CORBIJN: [
-        [0, 0, 0],          // Pure black (deep shadows)
-        [40, 20, 0],        // Dark brown (shadow detail)
-        [90, 45, 0],        // Burnt umber (midtone shadows)
-        [160, 80, 0],       // Burnt orange (midtones)
-        [220, 130, 0],      // Warm amber (highlights)
-        [255, 180, 20]      // Bright amber (specular highlights)
-    ],
-    // Neon city palette - vibrant 5-color scheme
-    NEON_CITY: [
-        [1, 1, 1],          // Near-black
+    // Extended amber palette with fire/ember gradient
+    AMBER_FIRE: [
         [255, 76, 0],       // Bright orange-red
-        [41, 51, 155],      // Deep blue
-        [253, 231, 76],     // Bright yellow
-        [116, 164, 188]     // Muted cyan-blue
+        [224, 48, 0],       // Vivid orange-red
+        [179, 39, 0],       // Deep orange-red
+        [137, 0, 0],        // Dark red
+        [71, 0, 0],         // Very dark red
+        [0, 0, 0]           // Black
     ],
     // Continue with other palettes
     GREEN_PHOSPHOR: [
