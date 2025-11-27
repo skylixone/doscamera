@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>DOS Camera Dither</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <video id="video" autoplay playsinline style="display:none;"></video>
+    <canvas id="canvas"></canvas>
+    <div id="fps">FPS: --</div>
+    <div id="controls">
+        <button id="startBtn">Start Camera</button>
+        <button id="flipBtn">Flip Camera</button>
+        <button id="hideUIBtn">Hide UI</button>
+        <select id="resolutionSelect">
+            <option value="960x540">960×540</option>
+            <option value="640x360">640×360</option>
+            <option value="480x270">480×270</option>
+            <option value="320x180">320×180</option>
+        </select>
+        <select id="paletteSelect">
+            <option value="VGA">VGA (16-color)</option>
+            <option value="CGA_CYAN">CGA Cyan</option>
+            <option value="CGA_RGBY">CGA RGBY</option>
+            <option value="AMBER">Amber</option>
+            <option value="AMBER_STEP">Amber Gradient</option>
+            <option value="GREEN_PHOSPHOR">Green Phosphor</option>
+            <option value="GREEN_STEP">Green Gradient</option>
+            <option value="GRAYSCALE">Grayscale</option>
+        </select>
+        <div id="version">v0.2.0</div>
+        <button id="snapshotBtn">Snapshot</button>
+    </div>
+
+    <script src="palette.js"></script>
+    <script src="dither.js"></script>
+    <script src="camera.js"></script>
+</body>
+</html>

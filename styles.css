@@ -1,0 +1,76 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #000;
+    font-family: 'Courier New', monospace;
+    color: #aaa;
+    overflow: hidden;
+    touch-action: none;
+}
+
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: contain;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    border: none;
+}
+
+#controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: flex-start;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 10px;
+    border: none;
+    z-index: 10;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+button, select {
+    background: #222;
+    color: #aaa;
+    border: 1px solid #555;
+    padding: 8px 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    cursor: pointer;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+button:active {
+    background: #333;
+}
+
+#fps {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    color: #0f0;
+    font-size: 14px;
+    opacity: 0.3;
+    z-index: 10;
+    pointer-events: none;
+}
+
+#version {
+    color: #888;
+    font-size: 12px;
+    flex-shrink: 0;
+}
