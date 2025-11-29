@@ -1,0 +1,38 @@
+# Why web-first?
+App Store costs $99/year. GitHub Pages is free. Testing camera effects needs real iPhone. Web version validates the idea for $0 in 4 hours.
+
+# Why Bayer dithering?
+Ordered dithering (Bayer) is temporally stable = no flickering between frames. Floyd-Steinberg looks smoother but costs 5x CPU = 12fps instead of 60fps. The stippled pattern is part of the DOS aesthetic anyway.
+
+# Why JavaScript for palette matching?
+Metal shader would be 3x faster but requires Xcode + learning Swift. Current JS version hits 60fps at target resolution (320x200). Optimize when there's a performance problem, not before.
+
+# Why these specific palettes?
+VGA = authentic DOS aesthetic (primary goal)
+CGA = 4-color runs 4x faster (only 4 distance calculations vs 16)
+Amber/Green = monochrome terminal nostalgia (1-bit depth)
+Grayscale = accessibility testing + universal appeal
+```
+
+**Step 5: Test with Claude Code**
+
+In VS Code, open Claude Code and type:
+```
+Read .claudecode/instructions.md, then COMPONENTS.md, then TODO.md.
+
+We're working on adding a dither strength slider control.
+
+Confirm your understanding before proceeding.
+```
+
+**Expected response from Claude Code:**
+
+It should read all three files and say something like:
+
+"I understand we need to add a dither strength slider. From COMPONENTS.md I see the dithering algorithm is in dither.js. The slider will need to adjust the dither noise amplitude (currently hardcoded to 64 in the algorithm). I'll add a UI control in index.html and wire it to update the dithering strength in real-time. Should I proceed?"
+
+**Step 6: Verify the system works**
+
+After Claude Code completes the slider:
+```
+Session end checklist - update TODO.md, DECISIONS.md if you made any choices, and COMPONENTS.md if you created reusable code.
