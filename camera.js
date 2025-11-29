@@ -104,16 +104,6 @@ function changeResolution(width, height) {
 }
 
 // Event listeners
-document.getElementById('startBtn').addEventListener('click', () => {
-    if (animationId) {
-        stopCamera();
-        document.getElementById('startBtn').textContent = 'Start Camera';
-    } else {
-        initCamera();
-        document.getElementById('startBtn').textContent = 'Stop Camera';
-    }
-});
-
 document.getElementById('flipBtn').addEventListener('click', flipCamera);
 
 document.getElementById('resolutionSelect').addEventListener('change', (e) => {
@@ -165,7 +155,6 @@ document.getElementById('hideUIBtn').addEventListener('click', () => {
 
     if (uiHidden) {
         // Hide all controls except hide button and snapshot button
-        document.getElementById('startBtn').style.display = 'none';
         document.getElementById('flipBtn').style.display = 'none';
         document.getElementById('resolutionSelect').style.display = 'none';
         document.getElementById('paletteSelect').style.display = 'none';
@@ -173,7 +162,6 @@ document.getElementById('hideUIBtn').addEventListener('click', () => {
         hideBtn.textContent = 'Show UI';
     } else {
         // Show all controls
-        document.getElementById('startBtn').style.display = 'block';
         document.getElementById('flipBtn').style.display = 'block';
         document.getElementById('resolutionSelect').style.display = 'block';
         document.getElementById('paletteSelect').style.display = 'block';
@@ -185,5 +173,4 @@ document.getElementById('hideUIBtn').addEventListener('click', () => {
 // Auto-start camera on page load
 window.addEventListener('DOMContentLoaded', () => {
     initCamera();
-    document.getElementById('startBtn').textContent = 'Stop Camera';
 });

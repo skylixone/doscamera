@@ -3,16 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>DOS Camera Dither</title>
+    <title>dCamm</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap" rel="stylesheet">
 </head>
 <body>
     <video id="video" autoplay playsinline style="display:none;"></video>
     <canvas id="canvas"></canvas>
     <div id="fps">FPS: --</div>
     <div id="controls">
-        <button id="startBtn">Start Camera</button>
-        <button id="flipBtn">Flip Camera</button>
+        <button id="flipBtn">Flip</button>
         <button id="hideUIBtn">Hide UI</button>
         <select id="resolutionSelect">
             <option value="960x540">960×540</option>
@@ -30,7 +32,7 @@
             <option value="GREEN_STEP">Green Gradient</option>
             <option value="GRAYSCALE">Grayscale</option>
         </select>
-        <div id="version">v0.2.7</div>
+        <div id="version">v0.2.8</div>
         <button id="snapshotBtn">Snapshot</button>
     </div>
 
