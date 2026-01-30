@@ -61,6 +61,33 @@ function blendPalettes(palette1, palette2, ratio) {
     return blended;
 }
 
+// Apply temperature shift to a palette
+// temp: -1 (cool/blue) to +1 (warm/red), 0 = neutral
+function applyTemperature(palette, temp) {
+    if (temp === 0) return palette;
+    
+    return palette.map(color => {
+        const [r, g, b] = color;
+        if (temp > 0) {
+            // Warm: boost red, reduce blue
+            const factor = temp * 0.3; // Max 30% shift
+            return [
+                Math.min(255, Math.round(r * (1 + factor))),
+                Math.round(g),
+                Math.max(0, Math.round(b * (1 - factor)))
+            ];
+        } else {
+            // Cool: boost blue, reduce red
+            const factor = Math.abs(temp) * 0.3;
+            return [
+                Math.max(0, Math.round(r * (1 - factor))),
+                Math.round(g),
+                Math.min(255, Math.round(b * (1 + factor)))
+            ];
+        }
+    });
+}
+
 const PALETTES = {
     VGA: [
         [0, 0, 0],          // 0: Black
@@ -105,33 +132,69 @@ const PALETTES = {
         [224, 48, 0],       // Vivid orange-red
         [255, 76, 0]        // Bright orange-red
     ],
-    // TODO: Debug camera freeze - these palettes cause freeze despite correct ordering
-    // AMBER_CORBIJN: [
-    //     [0, 0, 0],          // Pure black (deep shadows)
-    //     [40, 20, 0],        // Dark brown (shadow detail)
-    //     [90, 45, 0],        // Burnt umber (midtone shadows)
-    //     [160, 80, 0],       // Burnt orange (midtones)
-    //     [220, 130, 0],      // Warm amber (highlights)
-    //     [255, 180, 20]      // Bright amber (specular highlights)
-    // ],
-    // NEON_CITY: [
-    //     [1, 1, 1],          // Near-black
-    //     [41, 51, 155],      // Deep blue
-    //     [116, 164, 188],    // Muted cyan-blue
-    //     [255, 76, 0],       // Bright orange-red
-    //     [253, 231, 76]      // Bright yellow
-    // ],
-    // Continue with other palettes
     GREEN_PHOSPHOR: [
         [0, 0, 0],          // Black
         [0, 255, 0]         // Green
     ],
     GREEN_STEP: interpolateColors([0, 0, 0], [0, 255, 0], 16),
-    GRAYSCALE: interpolateColors([0, 0, 0], [255, 255, 255], 16)
+    GRAYSCALE: interpolateColors([0, 0, 0], [255, 255, 255], 16),
+    
+    // ===== BLADE RUNNER INSPIRED PALETTES =====
+    
+    // Classic Blade Runner (1982) - Steel cyan/blue noir with neon accents
+    // Based on Jordan Cronenweth's cinematography
+    BLADE_RUNNER: [
+        [5, 10, 20],        // Deep shadow blue-black
+        [15, 35, 55],       // Dark steel blue
+        [35, 65, 85],       // Midtone cyan-blue
+        [60, 95, 115],      // Steel cyan
+        [85, 125, 145],     // Light steel
+        [120, 85, 110],     // Muted magenta (neon reflection)
+        [180, 140, 60],     // Warm amber highlight (rare warm source)
+        [200, 180, 160]     // Desaturated warm white
+    ],
+    
+    // Blade Runner Neon - High contrast cyberpunk with vibrant neons
+    BLADE_RUNNER_NEON: [
+        [8, 5, 15],         // Deep purple-black
+        [25, 20, 45],       // Dark purple
+        [180, 40, 120],     // Hot magenta neon
+        [255, 60, 160],     // Bright pink neon
+        [40, 180, 200],     // Electric cyan
+        [80, 220, 240],     // Bright cyan
+        [240, 180, 40],     // Neon amber
+        [255, 220, 100]     // Bright yellow
+    ],
+    
+    // Cyberpunk - Classic cyberpunk palette with high contrast
+    CYBERPUNK: [
+        [10, 0, 20],        // Deep violet-black
+        [40, 0, 60],        // Dark purple
+        [100, 0, 120],      // Deep magenta
+        [255, 0, 80],       // Hot pink
+        [0, 240, 255],      // Electric cyan
+        [120, 255, 180],    // Mint green
+        [255, 255, 0],      // Cyber yellow
+        [255, 255, 255]     // White
+    ],
+    
+    // Noir - High contrast black and white with subtle blue tint
+    NOIR: [
+        [5, 5, 8],          // Near black with blue tint
+        [25, 25, 30],       // Dark gray
+        [60, 60, 68],       // Mid gray
+        [100, 100, 108],    // Light gray
+        [140, 140, 148],    // Lighter gray
+        [180, 180, 188],    // Near white
+        [220, 220, 228],    // White
+        [240, 240, 248]     // Pure white
+    ]
 };
 
 // Current palette (can be changed)
 let currentPalette = PALETTES.VGA;
+let currentPaletteName = 'VGA';
+let currentTemperature = 0; // -1 to +1
 
 // Pre-compute squared distances for palette matching
 // Euclidean distance in RGB space: sqrt((r1-r2)^2 + (g1-g2)^2 + (b1-b2)^2)
@@ -164,4 +227,13 @@ function findClosestColor(r, g, b) {
     }
 
     return closestIdx;
+}
+
+// Update palette with temperature adjustment
+function updatePaletteTemperature(temp) {
+    currentTemperature = temp;
+    const basePalette = PALETTES[currentPaletteName];
+    if (basePalette) {
+        currentPalette = applyTemperature(basePalette, temp);
+    }
 }

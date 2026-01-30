@@ -3,41 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>dCamm</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>di_ther</title>
+    <link rel="stylesheet" href="styles.css?t=1706480000">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap" rel="stylesheet">
 </head>
 <body>
     <video id="video" autoplay playsinline style="display:none;"></video>
-    <canvas id="canvas"></canvas>
+    <canvas id="canvas" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);"></canvas>
+    
+    <!-- Exposure Compensation Overlay (Vertical) -->
+    <div id="exposureOverlay" class="gesture-overlay hidden">
+        <div class="exposure-bar">
+            <div class="exposure-fill"></div>
+            <div class="exposure-center"></div>
+        </div>
+        <div class="exposure-value">EV: 0.0</div>
+    </div>
+    
+    <!-- Temperature Overlay (Horizontal) -->
+    <div id="tempOverlay" class="gesture-overlay hidden">
+        <div class="temp-bar">
+            <div class="temp-fill"></div>
+            <div class="temp-center"></div>
+        </div>
+        <div class="temp-value">TEMP: 0%</div>
+    </div>
+    
     <div id="fps">FPS: --</div>
-    <div id="controls">
-        <button id="flipBtn">Flip</button>
-        <button id="hideUIBtn">Hide UI</button>
-        <select id="resolutionSelect">
-            <option value="960x540">960×540</option>
-            <option value="640x360">640×360</option>
-            <option value="480x270">480×270</option>
-            <option value="320x180">320×180</option>
-        </select>
-        <select id="paletteSelect">
-            <option value="VGA">VGA (16-color)</option>
-            <option value="CGA_CYAN">CGA Cyan</option>
-            <option value="CGA_RGBY">CGA RGBY</option>
-            <option value="AMBER">Amber</option>
-            <option value="AMBER_FIRE">Amber Fire</option>
-            <option value="GREEN_PHOSPHOR">Green Phosphor</option>
-            <option value="GREEN_STEP">Green Gradient</option>
-            <option value="GRAYSCALE">Grayscale</option>
-        </select>
-        <div id="version">v0.2.8.1</div>
-        <button id="snapshotBtn">Snapshot</button>
+    <div id="version">v0.5.0</div>
+    
+    <!-- Shutter Button -->
+    <button id="shutterBtn" class="shutter-button">
+        <div class="shutter-inner"></div>
+    </button>
+    
+    <!-- Toolbar -->
+    <div id="toolbar">
+        <!-- Resolution button (switches to resolution mode) -->
+        <button id="resolutionBtn" class="toolbar-btn resolution-btn">960×540 →</button>
+        
+        <!-- 2x camera toggle -->
+        <button id="zoomBtn" class="toolbar-btn zoom-btn">2×</button>
+        
+        <!-- Palette buttons (default view) -->
+        <div id="paletteButtons" class="toolbar-group">
+            <button class="toolbar-btn palette-btn active" data-palette="VGA">VGA 16-bit</button>
+            <button class="toolbar-btn palette-btn" data-palette="AMBER">Amber</button>
+            <button class="toolbar-btn palette-btn" data-palette="BLADE_RUNNER_NEON">BR Neon</button>
+            <button class="toolbar-btn palette-btn" data-palette="BLADE_RUNNER">Blade Runner</button>
+            <button class="toolbar-btn palette-btn" data-palette="CYBERPUNK">Cyberpunk</button>
+            <button class="toolbar-btn palette-btn" data-palette="NOIR">Noir</button>
+        </div>
+        
+        <!-- Resolution options (hidden by default) -->
+        <div id="resolutionOptions" class="toolbar-group hidden">
+            <button class="toolbar-btn resolution-option active" data-res="960x540">960×540</button>
+            <button class="toolbar-btn resolution-option" data-res="640x360">640×360</button>
+            <button class="toolbar-btn resolution-option" data-res="480x270">480×270</button>
+            <button class="toolbar-btn resolution-option" data-res="320x180">320×180</button>
+        </div>
     </div>
 
-    <script src="palette.js"></script>
-    <script src="dither.js"></script>
-    <script src="camera.js"></script>
+    <script src="palette.js?t=1706480000"></script>
+    <script src="dither.js?t=1706480000"></script>
+    <script src="camera.js?t=1706480000"></script>
 </body>
 </html>
