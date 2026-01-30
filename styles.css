@@ -200,8 +200,6 @@ canvas {
     flex-direction: column;
     gap: 2px;
     z-index: 15;
-    max-height: 200px;
-    overflow-y: auto;
 }
 
 .dropup.hidden {
@@ -209,24 +207,24 @@ canvas {
 }
 
 .dropup-left {
-    left: 12px;
+    left: 0;
     align-items: flex-start;
 }
 
 .dropup-right {
-    right: 12px;
+    right: 0;
     align-items: flex-end;
 }
 
 .dropup-item {
     background: transparent;
-    color: rgba(255, 255, 255, 0.6);
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
     border: none;
     outline: none;
     padding: 10px 16px;
     font-family: 'Geist Mono', monospace;
     font-size: 14px;
-    text-align: right;
     cursor: pointer;
     white-space: nowrap;
     transition: color 0.1s ease;
@@ -236,8 +234,12 @@ canvas {
     text-align: left;
 }
 
+.dropup-right .dropup-item {
+    text-align: right;
+}
+
 .dropup-item:active {
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .dropup-item.active {
