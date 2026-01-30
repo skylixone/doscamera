@@ -384,78 +384,97 @@ function hideOverlays() {
     document.getElementById('tempOverlay').classList.add('hidden');
 }
 
-// ===== TOOLBAR EVENT LISTENERS =====
+// ===== DROP-UP MANAGEMENT =====
 
-// Palette buttons
+function closeAllDropups() {
+    document.getElementById('resolutionDropup').classList.add('hidden');
+    document.getElementById('paletteDropup').classList.add('hidden');
+    document.getElementById('resolutionBtn').classList.remove('active');
+    document.getElementById('paletteBtn').classList.remove('active');
+}
+
+function toggleDropup(dropupId, btnId) {
+    const dropup = document.getElementById(dropupId);
+    const btn = document.getElementById(btnId);
+    const isOpen = !dropup.classList.contains('hidden');
+    
+    closeAllDropups();
+    
+    if (!isOpen) {
+        dropup.classList.remove('hidden');
+        btn.classList.add('active');
+    }
+}
+
+// Resolution button - toggle drop-up
+document.getElementById('resolutionBtn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleDropup('resolutionDropup', 'resolutionBtn');
+});
+
+// Palette button - toggle drop-up
+document.getElementById('paletteBtn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleDropup('paletteDropup', 'paletteBtn');
+});
+
+// Close drop-ups when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.dropup') && !e.target.closest('.toolbar-btn')) {
+        closeAllDropups();
+    }
+});
+
+// ===== PALETTE SELECTION =====
+
 document.querySelectorAll('.palette-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
         const paletteName = btn.dataset.palette;
-        console.log('Switching palette to:', paletteName);
-
+        
         const newPalette = PALETTES[paletteName];
         if (!newPalette) {
             console.error('Palette not found:', paletteName);
             return;
         }
 
-        // Update active state
+        // Update active state in drop-up
         document.querySelectorAll('.palette-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
 
+        // Update trigger button text
+        document.getElementById('paletteBtn').textContent = btn.textContent;
+
         currentPaletteName = paletteName;
-        // Apply temperature to new base palette
         updatePaletteTemperature(currentTemperature);
         
-        console.log('Palette loaded:', paletteName, 'Colors:', currentPalette.length);
+        closeAllDropups();
     });
 });
 
-// Resolution button - toggle resolution mode
-let resolutionModeActive = false;
+// ===== RESOLUTION SELECTION =====
 
-document.getElementById('resolutionBtn').addEventListener('click', () => {
-    const paletteButtons = document.getElementById('paletteButtons');
-    const resolutionOptions = document.getElementById('resolutionOptions');
-    const resolutionBtn = document.getElementById('resolutionBtn');
-    
-    if (resolutionModeActive) {
-        // Hide resolution options, show palette
-        resolutionOptions.classList.add('hidden');
-        paletteButtons.classList.remove('hidden');
-        resolutionBtn.classList.remove('active');
-        resolutionModeActive = false;
-    } else {
-        // Show resolution options, hide palette
-        paletteButtons.classList.add('hidden');
-        resolutionOptions.classList.remove('hidden');
-        resolutionBtn.classList.add('active');
-        resolutionModeActive = true;
-    }
-});
-
-// Resolution options
 document.querySelectorAll('.resolution-option').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
         const [width, height] = btn.dataset.res.split('x').map(Number);
         
-        // Change resolution
         changeResolution(width, height);
         
-        // Update resolution button text
+        // Update trigger button text
         document.getElementById('resolutionBtn').textContent = `${width}×${height}`;
         
-        // Update active state
+        // Update active state in drop-up
         document.querySelectorAll('.resolution-option').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         
-        // Switch back to palette buttons
-        const resolutionBtn = document.getElementById('resolutionBtn');
-        document.getElementById('resolutionOptions').classList.add('hidden');
-        document.getElementById('paletteButtons').classList.remove('hidden');
-        resolutionBtn.classList.remove('active');
-        resolutionModeActive = false;
+        closeAllDropups();
     });
 });
+
+// Set initial active states
+document.querySelector('.resolution-option[data-res="640x360"]').classList.add('active');
+document.querySelector('.palette-btn[data-palette="VGA"]').classList.add('active');
 
 // Shutter button
 document.getElementById('shutterBtn').addEventListener('click', () => {
