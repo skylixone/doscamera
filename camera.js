@@ -410,13 +410,27 @@ document.querySelectorAll('.palette-btn').forEach(btn => {
     });
 });
 
-// Resolution button - toggle to resolution mode
+// Resolution button - toggle resolution mode
+let resolutionModeActive = false;
+
 document.getElementById('resolutionBtn').addEventListener('click', () => {
     const paletteButtons = document.getElementById('paletteButtons');
     const resolutionOptions = document.getElementById('resolutionOptions');
+    const resolutionBtn = document.getElementById('resolutionBtn');
     
-    paletteButtons.classList.add('hidden');
-    resolutionOptions.classList.remove('hidden');
+    if (resolutionModeActive) {
+        // Hide resolution options, show palette
+        resolutionOptions.classList.add('hidden');
+        paletteButtons.classList.remove('hidden');
+        resolutionBtn.classList.remove('active');
+        resolutionModeActive = false;
+    } else {
+        // Show resolution options, hide palette
+        paletteButtons.classList.add('hidden');
+        resolutionOptions.classList.remove('hidden');
+        resolutionBtn.classList.add('active');
+        resolutionModeActive = true;
+    }
 });
 
 // Resolution options
@@ -428,35 +442,19 @@ document.querySelectorAll('.resolution-option').forEach(btn => {
         changeResolution(width, height);
         
         // Update resolution button text
-        document.getElementById('resolutionBtn').textContent = `${width}×${height} →`;
+        document.getElementById('resolutionBtn').textContent = `${width}×${height}`;
         
         // Update active state
         document.querySelectorAll('.resolution-option').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         
         // Switch back to palette buttons
+        const resolutionBtn = document.getElementById('resolutionBtn');
         document.getElementById('resolutionOptions').classList.add('hidden');
         document.getElementById('paletteButtons').classList.remove('hidden');
+        resolutionBtn.classList.remove('active');
+        resolutionModeActive = false;
     });
-});
-
-// Zoom button (2x camera toggle)
-document.getElementById('zoomBtn').addEventListener('click', async () => {
-    const zoomBtn = document.getElementById('zoomBtn');
-    isZoomed = !isZoomed;
-    
-    // Update button state
-    if (isZoomed) {
-        zoomBtn.classList.add('active');
-        zoomBtn.textContent = '1×';
-    } else {
-        zoomBtn.classList.remove('active');
-        zoomBtn.textContent = '2×';
-    }
-    
-    // Restart camera with new device
-    stopCamera();
-    await initCamera();
 });
 
 // Shutter button

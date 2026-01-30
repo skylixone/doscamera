@@ -224,7 +224,14 @@ canvas {
 /* Resolution button */
 .resolution-btn {
     color: rgba(255, 255, 255, 0.5);
-    padding-right: 20px;
+    transition: color 0.15s ease, background 0.15s ease, border-radius 0.15s ease;
+}
+
+/* Resolution button active - inverted pill */
+.resolution-btn.active {
+    background: #ffcc00;
+    color: #000;
+    border-radius: 100px;
 }
 
 /* Palette buttons */
@@ -247,15 +254,6 @@ canvas {
     color: #ffcc00;
     text-decoration: underline;
     text-underline-offset: 4px;
-}
-
-/* Zoom button */
-.zoom-btn {
-    color: rgba(255, 255, 255, 0.5);
-}
-
-.zoom-btn.active {
-    color: #ffcc00;
 }
 
 /* ===== SHUTTER BUTTON ===== */

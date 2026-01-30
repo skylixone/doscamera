@@ -45,15 +45,13 @@
     <!-- Toolbar -->
     <div id="toolbar">
         <!-- Resolution button (switches to resolution mode) -->
-        <button id="resolutionBtn" class="toolbar-btn resolution-btn">960×540 →</button>
-        
-        <!-- 2x camera toggle -->
-        <button id="zoomBtn" class="toolbar-btn zoom-btn">2×</button>
+        <button id="resolutionBtn" class="toolbar-btn resolution-btn">640×360</button>
         
         <!-- Palette buttons (default view) -->
         <div id="paletteButtons" class="toolbar-group">
             <button class="toolbar-btn palette-btn active" data-palette="VGA">VGA 16-bit</button>
             <button class="toolbar-btn palette-btn" data-palette="AMBER">Amber</button>
+            <button class="toolbar-btn palette-btn" data-palette="ANOTHER_WORLD">Another World</button>
             <button class="toolbar-btn palette-btn" data-palette="BLADE_RUNNER_NEON">BR Neon</button>
             <button class="toolbar-btn palette-btn" data-palette="BLADE_RUNNER">Blade Runner</button>
             <button class="toolbar-btn palette-btn" data-palette="CYBERPUNK">Cyberpunk</button>
@@ -62,8 +60,8 @@
         
         <!-- Resolution options (hidden by default) -->
         <div id="resolutionOptions" class="toolbar-group hidden">
-            <button class="toolbar-btn resolution-option active" data-res="960x540">960×540</button>
-            <button class="toolbar-btn resolution-option" data-res="640x360">640×360</button>
+            <button class="toolbar-btn resolution-option" data-res="960x540">960×540</button>
+            <button class="toolbar-btn resolution-option active" data-res="640x360">640×360</button>
             <button class="toolbar-btn resolution-option" data-res="480x270">480×270</button>
             <button class="toolbar-btn resolution-option" data-res="320x180">320×180</button>
         </div>

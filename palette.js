@@ -188,6 +188,20 @@ const PALETTES = {
         [180, 180, 188],    // Near white
         [220, 220, 228],    // White
         [240, 240, 248]     // Pure white
+    ],
+    
+    // ===== ANOTHER WORLD (Out of This World) INSPIRED =====
+    // Based on Éric Chahi's rotoscoped cinematography
+    // Deep shadows, alien atmosphere, warm accent highlights
+    ANOTHER_WORLD: [
+        [0, 0, 0],          // Pure black (deep shadow)
+        [20, 15, 35],       // Dark violet-black (cave shadow)
+        [40, 30, 60],       // Deep purple (alien atmosphere)
+        [60, 50, 90],       // Muted purple
+        [85, 75, 120],      // Dusty violet
+        [120, 100, 80],     // Warm brown (rock/skin)
+        [180, 140, 100],    // Tan/flesh highlight
+        [220, 180, 140]     // Warm cream (bright accent)
     ]
 };
 
