@@ -1,15 +1,13 @@
 let video, canvas, ctx;
 let animationId;
 let currentFacingMode = 'environment';
-let currentWidth = 640;
-let currentHeight = 360;
+let currentLongEdge = 640; // Resolution setting: long edge only
 let frameCount = 0;
 let lastFpsUpdate = Date.now();
 
 // Camera devices
 let videoDevices = [];
 let currentDeviceIndex = 0;
-let isZoomed = false;
 
 // Gesture tracking
 let touchStartX = 0;
@@ -21,51 +19,45 @@ const GESTURE_THRESHOLD = 30; // pixels to determine gesture direction
 // UI state
 let uiHidden = false;
 
-function updateCanvasSize() {
+// Gallery
+const GALLERY_KEY = 'dither_gallery';
+
+function getCanvasDimensions() {
     const viewportAspect = window.innerWidth / window.innerHeight;
     const isPortrait = viewportAspect < 1;
     
-    // Flip dimensions in portrait mode (9:16 instead of 16:9)
-    canvas.width = isPortrait ? currentHeight : currentWidth;
-    canvas.height = isPortrait ? currentWidth : currentHeight;
-    
+    // Calculate dimensions based on viewport aspect ratio
+    // Long edge is fixed, short edge derived from actual screen ratio
+    if (isPortrait) {
+        // Portrait: height is long edge
+        const height = currentLongEdge;
+        const width = Math.round(height * viewportAspect);
+        return { width, height };
+    } else {
+        // Landscape: width is long edge
+        const width = currentLongEdge;
+        const height = Math.round(width / viewportAspect);
+        return { width, height };
+    }
+}
+
+function updateCanvasSize() {
+    const { width, height } = getCanvasDimensions();
+    canvas.width = width;
+    canvas.height = height;
     updateCanvasDisplaySize();
 }
 
 function updateCanvasDisplaySize() {
     if (!canvas) return;
     
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    const viewportAspect = viewportWidth / viewportHeight;
-    
-    // Determine if we're in portrait or landscape
-    // Portrait: viewport is taller than wide (aspect < 1)
-    // Landscape: viewport is wider than tall (aspect > 1)
-    const isPortrait = viewportAspect < 1;
-    
-    // Use appropriate dimensions based on orientation
-    // Portrait: flip to 9:16 (tall)
-    // Landscape: keep 16:9 (wide)
-    const canvasWidth = isPortrait ? currentHeight : currentWidth;
-    const canvasHeight = isPortrait ? currentWidth : currentHeight;
-    
-    // Scale to fill viewport (object-fit: cover)
-    const scaleX = viewportWidth / canvasWidth;
-    const scaleY = viewportHeight / canvasHeight;
-    const scale = Math.max(scaleX, scaleY);
-    
-    const displayWidth = canvasWidth * scale;
-    const displayHeight = canvasHeight * scale;
-    
-    canvas.style.width = displayWidth + 'px';
-    canvas.style.height = displayHeight + 'px';
+    // Fill viewport completely - aspect now matches
+    canvas.style.width = '100vw';
+    canvas.style.height = '100vh';
     canvas.style.position = 'fixed';
-    canvas.style.left = '50%';
-    canvas.style.top = '50%';
-    canvas.style.transform = 'translate(-50%, -50%)';
-    
-    console.log('Orientation:', isPortrait ? 'portrait' : 'landscape', 'Canvas:', displayWidth.toFixed(0), 'x', displayHeight.toFixed(0));
+    canvas.style.left = '0';
+    canvas.style.top = '0';
+    canvas.style.transform = 'none';
 }
 
 async function enumerateCameras() {
@@ -176,12 +168,11 @@ async function flipCamera() {
     await initCamera();
 }
 
-function changeResolution(width, height) {
+function changeResolution(longEdge) {
     const wasRunning = animationId !== null;
     if (wasRunning) stopCamera();
 
-    currentWidth = width;
-    currentHeight = height;
+    currentLongEdge = longEdge;
     updateCanvasSize();
 
     if (wasRunning) initCamera();
@@ -457,12 +448,12 @@ document.querySelectorAll('.palette-btn').forEach(btn => {
 document.querySelectorAll('.resolution-option').forEach(btn => {
     btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const [width, height] = btn.dataset.res.split('x').map(Number);
+        const longEdge = parseInt(btn.dataset.res);
         
-        changeResolution(width, height);
+        changeResolution(longEdge);
         
         // Update trigger button text
-        document.getElementById('resolutionBtn').textContent = `${width}×${height}`;
+        document.getElementById('resolutionBtn').textContent = longEdge;
         
         // Update active state in drop-up
         document.querySelectorAll('.resolution-option').forEach(b => b.classList.remove('active'));
@@ -473,7 +464,7 @@ document.querySelectorAll('.resolution-option').forEach(btn => {
 });
 
 // Set initial active states
-document.querySelector('.resolution-option[data-res="640x360"]').classList.add('active');
+document.querySelector('.resolution-option[data-res="640"]').classList.add('active');
 document.querySelector('.palette-btn[data-palette="VGA"]').classList.add('active');
 
 // Shutter button
@@ -483,19 +474,118 @@ document.getElementById('shutterBtn').addEventListener('click', () => {
             alert('Canvas not initialized. Start camera first.');
             return;
         }
-        // Create a temporary link to download the canvas as an image
+        
+        const dataUrl = canvas.toDataURL('image/png');
+        const timestamp = Date.now();
+        
+        // Save to localStorage
+        saveToGallery(dataUrl, timestamp);
+        
+        // Also download
         const link = document.createElement('a');
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        link.download = `doscamera-snapshot-${timestamp}.png`;
-        link.href = canvas.toDataURL('image/png');
+        link.download = `dither-${timestamp}.png`;
+        link.href = dataUrl;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        console.log('Snapshot saved:', link.download);
     } catch (err) {
         console.error('Snapshot failed:', err);
         alert('Snapshot failed: ' + err.message);
     }
+});
+
+// ===== GALLERY =====
+
+function getGallery() {
+    try {
+        return JSON.parse(localStorage.getItem(GALLERY_KEY)) || [];
+    } catch {
+        return [];
+    }
+}
+
+function saveToGallery(dataUrl, timestamp) {
+    const gallery = getGallery();
+    gallery.unshift({ id: timestamp, dataUrl });
+    
+    // Keep max 50 items to avoid localStorage limit
+    if (gallery.length > 50) gallery.pop();
+    
+    try {
+        localStorage.setItem(GALLERY_KEY, JSON.stringify(gallery));
+    } catch (e) {
+        console.warn('Gallery storage full, removing oldest');
+        gallery.pop();
+        localStorage.setItem(GALLERY_KEY, JSON.stringify(gallery));
+    }
+}
+
+function deleteFromGallery(id) {
+    const gallery = getGallery().filter(item => item.id !== id);
+    localStorage.setItem(GALLERY_KEY, JSON.stringify(gallery));
+    renderGallery();
+}
+
+function renderGallery() {
+    const gallery = getGallery();
+    const grid = document.getElementById('galleryGrid');
+    const empty = document.getElementById('galleryEmpty');
+    
+    grid.innerHTML = '';
+    
+    if (gallery.length === 0) {
+        empty.style.display = 'block';
+        grid.style.display = 'none';
+        return;
+    }
+    
+    empty.style.display = 'none';
+    grid.style.display = 'grid';
+    
+    gallery.forEach(item => {
+        const thumb = document.createElement('div');
+        thumb.className = 'gallery-thumb';
+        thumb.innerHTML = `<img src="${item.dataUrl}" alt="snapshot">`;
+        
+        // Tap to download
+        thumb.addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = `dither-${item.id}.png`;
+            link.href = item.dataUrl;
+            link.click();
+        });
+        
+        // Long press to delete
+        let pressTimer;
+        thumb.addEventListener('touchstart', (e) => {
+            pressTimer = setTimeout(() => {
+                if (confirm('Delete this snapshot?')) {
+                    deleteFromGallery(item.id);
+                }
+            }, 500);
+        });
+        thumb.addEventListener('touchend', () => clearTimeout(pressTimer));
+        thumb.addEventListener('touchmove', () => clearTimeout(pressTimer));
+        
+        grid.appendChild(thumb);
+    });
+}
+
+function openGallery() {
+    renderGallery();
+    document.getElementById('galleryOverlay').classList.remove('hidden');
+}
+
+function closeGallery() {
+    document.getElementById('galleryOverlay').classList.add('hidden');
+}
+
+document.getElementById('galleryBtn').addEventListener('click', openGallery);
+document.getElementById('galleryClose').addEventListener('click', closeGallery);
+
+// Close gallery on overlay background click
+document.getElementById('galleryOverlay').addEventListener('click', (e) => {
+    if (e.target.id === 'galleryOverlay') closeGallery();
 });
 
 // Auto-start camera on page load

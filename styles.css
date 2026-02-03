@@ -317,6 +317,93 @@ canvas {
     background: #ff4444;
 }
 
+/* ===== GALLERY ===== */
+
+.gallery-btn {
+    position: fixed;
+    top: 10px;
+    right: 50px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-family: 'Geist Mono', monospace;
+    font-size: 12px;
+    padding: 4px 8px;
+    cursor: pointer;
+    z-index: 20;
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+}
+
+.gallery-btn:active {
+    color: #fff;
+}
+
+.gallery-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+}
+
+.gallery-overlay.hidden {
+    display: none;
+}
+
+.gallery-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    color: #fff;
+    font-family: 'Geist Mono', monospace;
+    font-size: 14px;
+}
+
+.gallery-close {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px 12px;
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.gallery-thumb {
+    aspect-ratio: 16/9;
+    overflow: hidden;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.gallery-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.gallery-thumb:active {
+    border-color: #ffcc00;
+}
+
+.gallery-empty {
+    color: rgba(255, 255, 255, 0.4);
+    font-family: 'Geist Mono', monospace;
+    font-size: 14px;
+    text-align: center;
+    margin-top: 40px;
+}
+
 /* ===== RESPONSIVE ===== */
 
 @media (max-width: 480px) {

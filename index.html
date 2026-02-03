@@ -37,6 +37,19 @@
     <div id="fps">FPS: --</div>
     <div id="version">Jan 30, 1546</div>
     
+    <!-- Gallery button (upper right) -->
+    <button id="galleryBtn" class="gallery-btn">Gallery</button>
+    
+    <!-- Gallery overlay -->
+    <div id="galleryOverlay" class="gallery-overlay hidden">
+        <div class="gallery-header">
+            <span>Saved</span>
+            <button id="galleryClose" class="gallery-close">×</button>
+        </div>
+        <div id="galleryGrid" class="gallery-grid"></div>
+        <div id="galleryEmpty" class="gallery-empty">No snapshots yet</div>
+    </div>
+    
     <!-- Shutter Button -->
     <button id="shutterBtn" class="shutter-button">
         <div class="shutter-inner"></div>
@@ -44,10 +57,10 @@
     
     <!-- Drop-up: Resolution options (anchored left) -->
     <div id="resolutionDropup" class="dropup dropup-left hidden">
-        <button class="dropup-item resolution-option" data-res="960x540">960×540</button>
-        <button class="dropup-item resolution-option" data-res="640x360">640×360</button>
-        <button class="dropup-item resolution-option" data-res="480x270">480×270</button>
-        <button class="dropup-item resolution-option" data-res="320x180">320×180</button>
+        <button class="dropup-item resolution-option" data-res="960">960</button>
+        <button class="dropup-item resolution-option" data-res="640">640</button>
+        <button class="dropup-item resolution-option" data-res="480">480</button>
+        <button class="dropup-item resolution-option" data-res="320">320</button>
     </div>
     
     <!-- Drop-up: Palette options (anchored right) -->
@@ -64,7 +77,7 @@
     <!-- Toolbar -->
     <div id="toolbar">
         <!-- Resolution trigger -->
-        <button id="resolutionBtn" class="toolbar-btn resolution-btn">640×360</button>
+        <button id="resolutionBtn" class="toolbar-btn resolution-btn">640</button>
         
         <!-- Spacer pushes palette to right -->
         <div class="toolbar-spacer"></div>
