@@ -384,6 +384,28 @@ function closeAllDropups() {
     document.getElementById('paletteBtn').classList.remove('active');
 }
 
+function getResolutionLabel(longEdge) {
+    const viewportAspect = window.innerWidth / window.innerHeight;
+    const isPortrait = viewportAspect < 1;
+    
+    if (isPortrait) {
+        const width = Math.round(longEdge * viewportAspect);
+        return `${width}×${longEdge}`;
+    } else {
+        const height = Math.round(longEdge / viewportAspect);
+        return `${longEdge}×${height}`;
+    }
+}
+
+function updateResolutionLabels() {
+    document.querySelectorAll('.resolution-option').forEach(btn => {
+        const longEdge = parseInt(btn.dataset.res);
+        btn.textContent = getResolutionLabel(longEdge);
+    });
+    // Update trigger button too
+    document.getElementById('resolutionBtn').textContent = getResolutionLabel(currentLongEdge);
+}
+
 function toggleDropup(dropupId, btnId) {
     const dropup = document.getElementById(dropupId);
     const btn = document.getElementById(btnId);
@@ -392,6 +414,10 @@ function toggleDropup(dropupId, btnId) {
     closeAllDropups();
     
     if (!isOpen) {
+        // Update resolution labels before showing
+        if (dropupId === 'resolutionDropup') {
+            updateResolutionLabels();
+        }
         dropup.classList.remove('hidden');
         btn.classList.add('active');
     }
@@ -452,8 +478,8 @@ document.querySelectorAll('.resolution-option').forEach(btn => {
         
         changeResolution(longEdge);
         
-        // Update trigger button text
-        document.getElementById('resolutionBtn').textContent = longEdge;
+        // Update trigger button text with full resolution
+        document.getElementById('resolutionBtn').textContent = getResolutionLabel(longEdge);
         
         // Update active state in drop-up
         document.querySelectorAll('.resolution-option').forEach(b => b.classList.remove('active'));
@@ -592,9 +618,11 @@ document.getElementById('galleryOverlay').addEventListener('click', (e) => {
 window.addEventListener('DOMContentLoaded', () => {
     initCamera();
     initGestures();
+    updateResolutionLabels();
 });
 
 // Handle resize and orientation change
 window.addEventListener('resize', () => {
     updateCanvasDisplaySize();
+    updateResolutionLabels();
 });
