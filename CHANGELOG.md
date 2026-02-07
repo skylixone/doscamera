@@ -2,6 +2,9 @@
 
 > **Commit protocol**: Always update this changelog and the timestamp in `index.html` (line 38) before pushing. Format: `Mon DD, HHMM`
 
+## Feb 07, 1854
+- Added README.md with LLM-friendly documentation, architecture overview, and roadmap
+
 ## Feb 03, 1833
 - Resolution selector shows full calculated dimensions (e.g., 640×360), updates dynamically on viewport change
 - Drop-up item text aligned with button text edge
