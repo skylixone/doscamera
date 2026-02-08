@@ -17,6 +17,8 @@
 - Button-dropdown combo: separate button + toggle, dropup positioned absolute from parent
 - VGA hue-select: `rgbToHue` + `hueDistance` with radius+falloff gives smooth color spotlight. Achromatic check (hue<0) keeps grays untouched.
 - Tap-to-pick: Sample from `video` element (not canvas) to get pre-dither color. 5×5 → 1×1 drawImage averages the region. `vgaBaseHue` + temp offset model for base+fine-tune.
+- Landing page: `site/index.html`. anime.js v3 from CDN (v4 beta, unreliable on CDN). Horizontal gallery scroll via `position: sticky` + `transform: translateX`. Mouse ambient glow via CSS custom properties + `radial-gradient`.
+- Playwright/Firefox click on canvas times out (canvas redraws = never "stable"). Use `execute_script` to dispatch mouse events instead.
 
 ## Patterns That Don't Work
 - Hardcoded `?t=` cache busters — never change, iOS Safari caches forever

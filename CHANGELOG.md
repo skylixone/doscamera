@@ -2,6 +2,12 @@
 
 > **Commit protocol**: Always update this changelog and the timestamp in `index.html` (line 38) before pushing. Format: `Mon DD, HHMM`
 
+## Feb 09, 0100
+- Landing page v2: Geist Mono, 2× font sizes, boosted contrast, type-reveal section labels
+- Palette cards: grid layout with names, descriptions, color counts, and swatches
+- Massive terminal CTA at page bottom, fixed top-right CTA on scroll
+- Hero reduced to 55vh so gallery peeks below fold
+
 ## Feb 08, 1400
 - VGA hue-select: horizontal swipe sweeps a color spotlight across the spectrum, desaturating out-of-range colors
 - Tap-to-pick: tap viewfinder to sample scene color as hue center, then fine-tune ±90° with swipe
