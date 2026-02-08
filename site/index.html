@@ -181,11 +181,30 @@
             color: var(--text);
             letter-spacing: 0.08em;
             border: 1px solid var(--border);
-            padding: 0.7rem 1.5rem;
+            padding: 1rem 1.5rem;
             opacity: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
         }
 
         .hero-tagline span { color: var(--accent); }
+
+        .tagline-item {
+            overflow: hidden;
+            white-space: nowrap;
+            width: 0;
+            border-right: 2px solid transparent;
+        }
+
+        .tagline-item.typing {
+            border-right-color: var(--accent);
+        }
+
+        .tagline-item.typed {
+            width: auto;
+            border-right-color: transparent;
+        }
 
         /* ===== GALLERY (horizontal scroll) ===== */
 
@@ -302,6 +321,7 @@
             padding: 1.2rem 1.8rem;
             text-align: center;
             opacity: 0;
+            min-width: 140px;
         }
 
         .pipe-step .step-label {
@@ -329,9 +349,9 @@
 
         .palette-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            max-width: 1100px;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2.5rem;
+            max-width: 1400px;
             width: 100%;
             padding: 0 2rem;
         }
@@ -339,10 +359,10 @@
         .palette-card {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 1rem;
             opacity: 0;
             cursor: default;
-            padding: 1.5rem;
+            padding: 2rem;
             border: 1px solid var(--border);
             transition: border-color 0.3s;
         }
@@ -358,32 +378,32 @@
         }
 
         .palette-card .name {
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             color: var(--white);
             font-weight: 500;
             letter-spacing: 0.05em;
         }
 
-        .palette-card .color-count {
-            font-size: 0.85rem;
+        .palette-card .bit-depth {
+            font-size: 1rem;
             color: var(--text-dim);
         }
 
         .palette-card .description {
-            font-size: 0.9rem;
+            font-size: 1rem;
             color: var(--text-dim);
             line-height: 1.5;
         }
 
         .palette-swatches {
             display: flex;
-            gap: 2px;
+            gap: 3px;
             flex-wrap: wrap;
         }
 
         .swatch {
-            width: 24px;
-            height: 24px;
+            width: 40px;
+            height: 40px;
             transition: transform 0.15s;
         }
 
@@ -527,6 +547,13 @@
             .pipeline {
                 flex-direction: column;
                 gap: 0;
+                width: 100%;
+                padding: 0 1rem;
+            }
+
+            .pipe-step {
+                width: 100%;
+                min-width: unset;
             }
 
             .pipe-arrow {
@@ -536,6 +563,16 @@
 
             .palette-grid {
                 grid-template-columns: 1fr;
+                padding: 0 1rem;
+            }
+
+            .palette-card {
+                padding: 1.5rem;
+            }
+
+            .swatch {
+                width: 32px;
+                height: 32px;
             }
 
             .terminal-box {
@@ -580,7 +617,9 @@
             </h1>
             <p class="subtitle" id="subtitle">real-time dithered camera</p>
             <div class="hero-tagline" id="heroTagline">
-                bayer 4x4 · <span>7 palettes</span> · gesture controls
+                <div class="tagline-item">bayer 4×4 ordered dithering</div>
+                <div class="tagline-item"><span>7 palettes</span> · 1-bit to 4-bit</div>
+                <div class="tagline-item">gesture controls · real-time</div>
             </div>
         </section>
 
@@ -590,23 +629,23 @@
                 <div class="gallery-track" id="galleryTrack">
                     <div class="frame" style="--glow: 0, 200, 238">
                         <img src="../examples/night-street-cyan.png" alt="Night street in cyan neon palette">
-                        <div class="frame-label">palette <span class="pal">BR Neon</span></div>
+                        <div class="frame-label"><span class="pal">BR Neon</span> · 3-bit · 8 colors</div>
                     </div>
                     <div class="frame" style="--glow: 255, 176, 0">
                         <img src="../examples/night-amber-mono.png" alt="Night scene in amber monochrome">
-                        <div class="frame-label">palette <span class="pal">Amber</span></div>
+                        <div class="frame-label"><span class="pal">Amber</span> · 1-bit · 2 colors</div>
                     </div>
                     <div class="frame" style="--glow: 255, 170, 0">
                         <img src="../examples/winter-path-amber.png" alt="Winter path with amber accents">
-                        <div class="frame-label">mode <span class="pal">VGA hue-select</span></div>
+                        <div class="frame-label"><span class="pal">VGA hue-select</span> · 4-bit · 16 colors</div>
                     </div>
                     <div class="frame" style="--glow: 255, 48, 80">
                         <img src="../examples/night-cars-red.png" alt="Night cars with red accent">
-                        <div class="frame-label">mode <span class="pal">VGA hue-select</span></div>
+                        <div class="frame-label"><span class="pal">VGA hue-select</span> · 4-bit · 16 colors</div>
                     </div>
                     <div class="frame" style="--glow: 255, 160, 60">
                         <img src="../examples/building-night-warm.png" alt="Building at night with warm palette">
-                        <div class="frame-label">palette <span class="pal">VGA 16-bit</span></div>
+                        <div class="frame-label"><span class="pal">VGA 16-bit</span> · 4-bit · 16 colors</div>
                     </div>
                 </div>
             </div>
@@ -689,27 +728,19 @@
 
         // ===== PALETTE DATA WITH DESCRIPTIONS =====
         const PALETTES = [
-            { name: 'VGA 16-bit', desc: 'Classic DOS 16-color palette. The original.', colors: [[0,0,0],[0,0,170],[0,170,0],[0,170,170],[170,0,0],[170,0,170],[170,85,0],[170,170,170],[85,85,85],[85,85,255],[85,255,85],[85,255,255],[255,85,85],[255,85,255],[255,255,85],[255,255,255]] },
-            { name: 'Amber', desc: 'Monochrome phosphor. Two colors, infinite mood.', colors: [[0,0,0],[255,176,0]] },
-            { name: 'Another World', desc: 'Inspired by Eric Chahi\'s rotoscoped alien world.', colors: [[0,0,0],[20,15,35],[40,30,60],[60,50,90],[85,75,120],[120,100,80],[180,140,100],[220,180,140]] },
-            { name: 'BR Neon', desc: 'Electric neon against deep purple darkness.', colors: [[8,5,15],[25,20,45],[180,40,120],[255,60,160],[40,180,200],[80,220,240],[240,180,40],[255,220,100]] },
-            { name: 'Blade Runner', desc: 'Steel cyan noir. Rain-slicked reflections.', colors: [[5,10,20],[15,35,55],[35,65,85],[60,95,115],[85,125,145],[120,85,110],[180,140,60],[200,180,160]] },
-            { name: 'Cyberpunk', desc: 'High-voltage magenta, cyan, and acid yellow.', colors: [[10,0,20],[40,0,60],[100,0,120],[255,0,80],[0,240,255],[120,255,180],[255,255,0],[255,255,255]] },
-            { name: 'Noir', desc: 'Blue-tinted grayscale. Shadows and smoke.', colors: [[5,5,8],[25,25,30],[60,60,68],[100,100,108],[140,140,148],[180,180,188],[220,220,228],[240,240,248]] }
+            { name: 'VGA 16-bit', bits: '4-bit', desc: 'Classic DOS 16-color palette. The original.', colors: [[0,0,0],[0,0,170],[0,170,0],[0,170,170],[170,0,0],[170,0,170],[170,85,0],[170,170,170],[85,85,85],[85,85,255],[85,255,85],[85,255,255],[255,85,85],[255,85,255],[255,255,85],[255,255,255]] },
+            { name: 'Amber', bits: '1-bit', desc: 'Monochrome phosphor. Two colors, infinite mood.', colors: [[0,0,0],[255,176,0]] },
+            { name: 'Another World', bits: '3-bit', desc: 'Inspired by Eric Chahi\'s rotoscoped alien world.', colors: [[0,0,0],[20,15,35],[40,30,60],[60,50,90],[85,75,120],[120,100,80],[180,140,100],[220,180,140]] },
+            { name: 'BR Neon', bits: '3-bit', desc: 'Electric neon against deep purple darkness.', colors: [[8,5,15],[25,20,45],[180,40,120],[255,60,160],[40,180,200],[80,220,240],[240,180,40],[255,220,100]] },
+            { name: 'Blade Runner', bits: '3-bit', desc: 'Steel cyan noir. Rain-slicked reflections.', colors: [[5,10,20],[15,35,55],[35,65,85],[60,95,115],[85,125,145],[120,85,110],[180,140,60],[200,180,160]] },
+            { name: 'Cyberpunk', bits: '3-bit', desc: 'High-voltage magenta, cyan, and acid yellow.', colors: [[10,0,20],[40,0,60],[100,0,120],[255,0,80],[0,240,255],[120,255,180],[255,255,0],[255,255,255]] },
+            { name: 'Noir', bits: '3-bit', desc: 'Blue-tinted grayscale. Shadows and smoke.', colors: [[5,5,8],[25,25,30],[60,60,68],[100,100,108],[140,140,148],[180,180,188],[220,220,228],[240,240,248]] }
         ];
 
         const paletteGrid = document.getElementById('paletteGrid');
         PALETTES.forEach(pal => {
             const card = document.createElement('div');
             card.className = 'palette-card';
-
-            const header = document.createElement('div');
-            header.className = 'palette-header';
-            header.innerHTML = `<span class="name">${pal.name}</span><span class="color-count">${pal.colors.length} colors</span>`;
-
-            const desc = document.createElement('div');
-            desc.className = 'description';
-            desc.textContent = pal.desc;
 
             const swatches = document.createElement('div');
             swatches.className = 'palette-swatches';
@@ -720,9 +751,17 @@
                 swatches.appendChild(s);
             });
 
+            const header = document.createElement('div');
+            header.className = 'palette-header';
+            header.innerHTML = `<span class="name">${pal.name}</span><span class="bit-depth">${pal.bits}</span>`;
+
+            const desc = document.createElement('div');
+            desc.className = 'description';
+            desc.textContent = pal.desc;
+
+            card.appendChild(swatches);
             card.appendChild(header);
             card.appendChild(desc);
-            card.appendChild(swatches);
             paletteGrid.appendChild(card);
         });
 
@@ -752,7 +791,29 @@
             targets: '#heroTagline',
             opacity: [0, 1],
             translateY: [10, 0],
-            duration: 600
+            duration: 600,
+            complete: () => {
+                const items = document.querySelectorAll('.tagline-item');
+                let delay = 0;
+                items.forEach((item, i) => {
+                    const text = item.textContent;
+                    const fullWidth = item.scrollWidth;
+                    setTimeout(() => {
+                        item.classList.add('typing');
+                        anime({
+                            targets: item,
+                            width: [0, fullWidth + 4],
+                            duration: text.length * 45,
+                            easing: 'steps(' + text.length + ')',
+                            complete: () => {
+                                item.classList.remove('typing');
+                                item.classList.add('typed');
+                            }
+                        });
+                    }, delay);
+                    delay += text.length * 45 + 150;
+                });
+            }
         }, '-=400');
 
         // ===== HORIZONTAL GALLERY SCROLL =====

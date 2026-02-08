@@ -2,6 +2,13 @@
 
 > **Commit protocol**: Always update this changelog and the timestamp in `index.html` (line 38) before pushing. Format: `Mon DD, HHMM`
 
+## Feb 09, 0130
+- Palette cards: swatches-first layout, bit depth labels (replaces color count)
+- Pipeline: equal-width boxes on mobile
+- Hero tagline: one item per line with sequential type-in animation
+- Gallery labels: bit depth + color count factoids per image
+- Palettes: 2× size on desktop (40px swatches), full-width on mobile
+
 ## Feb 09, 0100
 - Landing page v2: Geist Mono, 2× font sizes, boosted contrast, type-reveal section labels
 - Palette cards: grid layout with names, descriptions, color counts, and swatches
