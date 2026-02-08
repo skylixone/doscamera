@@ -12,9 +12,11 @@ let currentDeviceIndex = 0;
 // Gesture tracking
 let touchStartX = 0;
 let touchStartY = 0;
+let touchStartTime = 0;
 let isTouching = false;
 let gestureMode = null; // 'exposure' or 'temperature'
 const GESTURE_THRESHOLD = 30; // pixels to determine gesture direction
+const TAP_MAX_DURATION = 300; // ms
 
 // UI state
 let uiHidden = false;
@@ -203,10 +205,11 @@ function initGestures() {
 function handleTouchStart(e) {
     e.preventDefault();
     if (e.touches.length !== 1) return;
-    
+
     const touch = e.touches[0];
     touchStartX = touch.clientX;
     touchStartY = touch.clientY;
+    touchStartTime = performance.now();
     isTouching = true;
     gestureMode = null;
 }
@@ -243,6 +246,9 @@ function handleTouchMove(e) {
 
 function handleTouchEnd(e) {
     e.preventDefault();
+    if (!gestureMode && (performance.now() - touchStartTime) < TAP_MAX_DURATION) {
+        pickHueFromViewfinder(touchStartX, touchStartY);
+    }
     isTouching = false;
     gestureMode = null;
     hideOverlays();
@@ -252,11 +258,13 @@ function handleTouchEnd(e) {
 let mouseDown = false;
 let mouseStartX = 0;
 let mouseStartY = 0;
+let mouseStartTime = 0;
 
 function handleMouseDown(e) {
     mouseDown = true;
     mouseStartX = e.clientX;
     mouseStartY = e.clientY;
+    mouseStartTime = performance.now();
     gestureMode = null;
 }
 
@@ -288,6 +296,9 @@ function handleMouseMove(e) {
 }
 
 function handleMouseUp(e) {
+    if (!gestureMode && (performance.now() - mouseStartTime) < TAP_MAX_DURATION) {
+        pickHueFromViewfinder(mouseStartX, mouseStartY);
+    }
     mouseDown = false;
     gestureMode = null;
     hideOverlays();
@@ -372,6 +383,42 @@ function updateTempUI() {
     } else {
         fill.style.background = '#888';
     }
+}
+
+// ===== TAP-TO-PICK HUE =====
+
+function pickHueFromViewfinder(screenX, screenY) {
+    if (currentPaletteName !== 'VGA') return;
+
+    // Map screen coords → video coords (canvas fills viewport 1:1)
+    const videoX = (screenX / window.innerWidth) * video.videoWidth;
+    const videoY = (screenY / window.innerHeight) * video.videoHeight;
+
+    // Sample 5×5 region averaged onto 1×1 temp canvas
+    const tmp = document.createElement('canvas');
+    tmp.width = 1;
+    tmp.height = 1;
+    const tctx = tmp.getContext('2d');
+    tctx.drawImage(video, videoX - 2, videoY - 2, 5, 5, 0, 0, 1, 1);
+    const px = tctx.getImageData(0, 0, 1, 1).data;
+
+    const hue = rgbToHue(px[0], px[1], px[2]);
+    if (hue < 0) return; // achromatic — ignore
+
+    setVGABaseHue(hue);
+    showTapIndicator(screenX, screenY, px[0], px[1], px[2]);
+}
+
+function showTapIndicator(x, y, r, g, b) {
+    const el = document.getElementById('tapIndicator');
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    el.style.borderColor = `rgb(${r},${g},${b})`;
+    el.classList.remove('hidden', 'fade-out');
+    // Force reflow to restart animation
+    el.offsetHeight;
+    el.classList.add('fade-out');
+    setTimeout(() => el.classList.add('hidden'), 500);
 }
 
 function hideOverlays() {

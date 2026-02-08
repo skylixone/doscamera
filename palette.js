@@ -65,7 +65,7 @@ function blendPalettes(palette1, palette2, ratio) {
 // temp: -1 (cool/blue) to +1 (warm/red), 0 = neutral
 function applyTemperature(palette, temp) {
     if (temp === 0) return palette;
-    
+
     return palette.map(color => {
         const [r, g, b] = color;
         if (temp > 0) {
@@ -85,6 +85,70 @@ function applyTemperature(palette, temp) {
                 Math.min(255, Math.round(b * (1 + factor)))
             ];
         }
+    });
+}
+
+// === VGA hue-select temperature ===
+// Sweeps a color spotlight across the spectrum.
+// Colors near the selected hue stay chromatic, rest desaturate to gray.
+
+function rgbToHue(r, g, b) {
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    if (max === min) return -1; // achromatic
+    const d = max - min;
+    let h;
+    if (max === r) h = ((g - b) / d + 6) % 6;
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    return h * 60;
+}
+
+function hueDistance(h1, h2) {
+    const d = Math.abs(h1 - h2);
+    return Math.min(d, 360 - d);
+}
+
+function applyVGAHueSelect(palette, temp) {
+    let hueCenter;
+    if (vgaBaseHue !== null) {
+        // Fine-tune: ±90° from tap-picked hue
+        hueCenter = (vgaBaseHue + temp * 90 + 360) % 360;
+    } else {
+        // Full sweep: temp (-1..+1) → hue (0..360)
+        hueCenter = ((temp + 1) / 2) * 360;
+    }
+    const hueRadius = 50;  // fully chromatic within ±50°
+    const hueFalloff = 30;  // gradual desaturation over next 30°
+
+    return palette.map(color => {
+        const [r, g, b] = color;
+        const hue = rgbToHue(r, g, b);
+
+        // Achromatic (grays, black, white) — keep as-is
+        if (hue < 0) return color;
+
+        const dist = hueDistance(hue, hueCenter);
+
+        if (dist <= hueRadius) {
+            return color; // in spotlight
+        }
+
+        // Luminance-equivalent gray
+        const lum = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+
+        if (dist <= hueRadius + hueFalloff) {
+            // Partial desaturation
+            const blend = (dist - hueRadius) / hueFalloff;
+            return [
+                Math.round(r + (lum - r) * blend),
+                Math.round(g + (lum - g) * blend),
+                Math.round(b + (lum - b) * blend)
+            ];
+        }
+
+        // Fully desaturated
+        return [lum, lum, lum];
     });
 }
 
@@ -209,6 +273,7 @@ const PALETTES = {
 let currentPalette = PALETTES.VGA;
 let currentPaletteName = 'VGA';
 let currentTemperature = 0; // -1 to +1
+let vgaBaseHue = null; // null = full sweep, number = tap-picked hue center
 
 // Pre-compute squared distances for palette matching
 // Euclidean distance in RGB space: sqrt((r1-r2)^2 + (g1-g2)^2 + (b1-b2)^2)
@@ -243,11 +308,25 @@ function findClosestColor(r, g, b) {
     return closestIdx;
 }
 
+function setVGABaseHue(hue) {
+    vgaBaseHue = hue;
+    currentTemperature = 0;
+    updatePaletteTemperature(0);
+}
+
 // Update palette with temperature adjustment
 function updatePaletteTemperature(temp) {
     currentTemperature = temp;
     const basePalette = PALETTES[currentPaletteName];
-    if (basePalette) {
+    if (!basePalette) return;
+
+    if (currentPaletteName !== 'VGA') {
+        vgaBaseHue = null;
+    }
+
+    if (currentPaletteName === 'VGA' && (temp !== 0 || vgaBaseHue !== null)) {
+        currentPalette = applyVGAHueSelect(basePalette, temp);
+    } else {
         currentPalette = applyTemperature(basePalette, temp);
     }
 }

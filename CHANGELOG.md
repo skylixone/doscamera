@@ -2,6 +2,12 @@
 
 > **Commit protocol**: Always update this changelog and the timestamp in `index.html` (line 38) before pushing. Format: `Mon DD, HHMM`
 
+## Feb 08, 1400
+- VGA hue-select: horizontal swipe sweeps a color spotlight across the spectrum, desaturating out-of-range colors
+- Tap-to-pick: tap viewfinder to sample scene color as hue center, then fine-tune ±90° with swipe
+- Visual feedback: colored ring at tap point with fade-out animation
+- Switching away from VGA resets picked hue
+
 ## Feb 07, 1915
 - Gallery preview: tap opens full-screen view instead of downloading
 - Share button: invokes iOS system share sheet (Web Share API)
