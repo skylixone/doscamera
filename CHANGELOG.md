@@ -2,6 +2,13 @@
 
 > **Commit protocol**: Always update this changelog and the timestamp in `index.html` (line 38) before pushing. Format: `Mon DD, HHMM`
 
+## Feb 07, 1915
+- Gallery preview: tap opens full-screen view instead of downloading
+- Share button: invokes iOS system share sheet (Web Share API)
+- Save button-dropdown: tap saves, dropdown offers 1×/2×/4× nearest-neighbor scaling
+- X button to close preview
+- Fix: shutter no longer auto-downloads (was causing iOS save dialog + button disappearing)
+
 ## Feb 07, 1854
 - Added README.md with LLM-friendly documentation, architecture overview, and roadmap
 

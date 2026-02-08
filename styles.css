@@ -406,6 +406,139 @@ canvas {
     margin-top: 40px;
 }
 
+/* ===== PREVIEW OVERLAY ===== */
+
+.preview-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.98);
+    z-index: 300;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.preview-overlay.hidden {
+    display: none;
+}
+
+.preview-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 32px;
+    cursor: pointer;
+    padding: 8px 16px;
+    z-index: 10;
+}
+
+.preview-image-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px 120px 20px;
+    width: 100%;
+}
+
+.preview-image-container img {
+    max-width: 100%;
+    max-height: 100%;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+.preview-actions {
+    position: absolute;
+    bottom: 40px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.preview-btn {
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    color: #fff;
+    font-family: 'Geist Mono', monospace;
+    font-size: 14px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.preview-btn:active {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #fff;
+}
+
+/* Save combo button */
+.save-combo {
+    display: flex;
+    position: relative;
+}
+
+.save-combo .save-btn {
+    border-radius: 8px 0 0 8px;
+    border-right: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.scale-toggle {
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    border-left: none;
+    color: #fff;
+    font-size: 10px;
+    padding: 12px 10px;
+    border-radius: 0 8px 8px 0;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.scale-toggle:active {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.scale-dropup {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    margin-bottom: 8px;
+    background: rgba(30, 30, 30, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.scale-dropup.hidden {
+    display: none;
+}
+
+.scale-option {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-family: 'Geist Mono', monospace;
+    font-size: 14px;
+    padding: 12px 20px;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.1s ease;
+}
+
+.scale-option:active,
+.scale-option.active {
+    background: rgba(255, 204, 0, 0.3);
+    color: #ffcc00;
+}
+
 /* ===== RESPONSIVE ===== */
 
 @media (max-width: 480px) {

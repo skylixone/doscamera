@@ -7,7 +7,8 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>di_ther</title>
-    <link rel="stylesheet" href="styles.css?t=1706480000">
+    <script>var __v = Date.now();</script>
+    <script>document.write('<link rel="stylesheet" href="styles.css?v=' + __v + '">');</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap" rel="stylesheet">
@@ -35,7 +36,7 @@
     </div>
     
     <div id="fps">FPS: --</div>
-    <div id="version">Feb 07, 1854</div>
+    <div id="version">Feb 07, 1915</div>
     
     <!-- Gallery button (upper right) -->
     <button id="galleryBtn" class="gallery-btn">Gallery</button>
@@ -48,6 +49,26 @@
         </div>
         <div id="galleryGrid" class="gallery-grid"></div>
         <div id="galleryEmpty" class="gallery-empty">No snapshots yet</div>
+    </div>
+
+    <!-- Preview overlay -->
+    <div id="previewOverlay" class="preview-overlay hidden">
+        <button id="previewClose" class="preview-close">×</button>
+        <div class="preview-image-container">
+            <img id="previewImage" src="" alt="Preview">
+        </div>
+        <div class="preview-actions">
+            <button id="shareBtn" class="preview-btn">Share</button>
+            <div class="save-combo">
+                <button id="saveBtn" class="preview-btn save-btn">Save</button>
+                <button id="scaleToggle" class="scale-toggle">▼</button>
+                <div id="scaleDropup" class="scale-dropup hidden">
+                    <button class="scale-option active" data-scale="1">1×</button>
+                    <button class="scale-option" data-scale="2">2×</button>
+                    <button class="scale-option" data-scale="4">4×</button>
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- Shutter Button -->
@@ -86,8 +107,10 @@
         <button id="paletteBtn" class="toolbar-btn palette-trigger">VGA 16-bit</button>
     </div>
 
-    <script src="palette.js?t=1706480000"></script>
-    <script src="dither.js?t=1706480000"></script>
-    <script src="camera.js?t=1706480000"></script>
+    <script>
+    document.write('<script src="palette.js?v=' + __v + '"><\/script>');
+    document.write('<script src="dither.js?v=' + __v + '"><\/script>');
+    document.write('<script src="camera.js?v=' + __v + '"><\/script>');
+    </script>
 </body>
 </html>

@@ -22,6 +22,10 @@ let uiHidden = false;
 // Gallery
 const GALLERY_KEY = 'dither_gallery';
 
+// Preview state
+let currentPreviewData = null;
+let currentSaveScale = 1;
+
 function getCanvasDimensions() {
     const viewportAspect = window.innerWidth / window.innerHeight;
     const isPortrait = viewportAspect < 1;
@@ -493,27 +497,24 @@ document.querySelectorAll('.resolution-option').forEach(btn => {
 document.querySelector('.resolution-option[data-res="640"]').classList.add('active');
 document.querySelector('.palette-btn[data-palette="VGA"]').classList.add('active');
 
-// Shutter button
+// Shutter button - save to gallery only (no auto-download)
 document.getElementById('shutterBtn').addEventListener('click', () => {
     try {
         if (!canvas) {
             alert('Canvas not initialized. Start camera first.');
             return;
         }
-        
+
         const dataUrl = canvas.toDataURL('image/png');
         const timestamp = Date.now();
-        
-        // Save to localStorage
+
+        // Save to localStorage only - user can download from gallery preview
         saveToGallery(dataUrl, timestamp);
-        
-        // Also download
-        const link = document.createElement('a');
-        link.download = `dither-${timestamp}.png`;
-        link.href = dataUrl;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+
+        // Brief visual feedback
+        const btn = document.getElementById('shutterBtn');
+        btn.style.opacity = '0.5';
+        setTimeout(() => btn.style.opacity = '1', 100);
     } catch (err) {
         console.error('Snapshot failed:', err);
         alert('Snapshot failed: ' + err.message);
@@ -556,31 +557,28 @@ function renderGallery() {
     const gallery = getGallery();
     const grid = document.getElementById('galleryGrid');
     const empty = document.getElementById('galleryEmpty');
-    
+
     grid.innerHTML = '';
-    
+
     if (gallery.length === 0) {
         empty.style.display = 'block';
         grid.style.display = 'none';
         return;
     }
-    
+
     empty.style.display = 'none';
     grid.style.display = 'grid';
-    
+
     gallery.forEach(item => {
         const thumb = document.createElement('div');
         thumb.className = 'gallery-thumb';
         thumb.innerHTML = `<img src="${item.dataUrl}" alt="snapshot">`;
-        
-        // Tap to download
+
+        // Tap to open preview
         thumb.addEventListener('click', () => {
-            const link = document.createElement('a');
-            link.download = `dither-${item.id}.png`;
-            link.href = item.dataUrl;
-            link.click();
+            openPreview(item.dataUrl, item.id);
         });
-        
+
         // Long press to delete
         let pressTimer;
         thumb.addEventListener('touchstart', (e) => {
@@ -592,10 +590,129 @@ function renderGallery() {
         });
         thumb.addEventListener('touchend', () => clearTimeout(pressTimer));
         thumb.addEventListener('touchmove', () => clearTimeout(pressTimer));
-        
+
         grid.appendChild(thumb);
     });
 }
+
+// ===== PREVIEW =====
+
+function openPreview(dataUrl, id) {
+    currentPreviewData = { dataUrl, id };
+    document.getElementById('previewImage').src = dataUrl;
+    document.getElementById('previewOverlay').classList.remove('hidden');
+}
+
+function closePreview() {
+    document.getElementById('previewOverlay').classList.add('hidden');
+    document.getElementById('scaleDropup').classList.add('hidden');
+    currentPreviewData = null;
+}
+
+async function shareImage() {
+    if (!currentPreviewData) return;
+
+    // Convert dataUrl to blob for sharing
+    const response = await fetch(currentPreviewData.dataUrl);
+    const blob = await response.blob();
+    const file = new File([blob], `dither-${currentPreviewData.id}.png`, { type: 'image/png' });
+
+    if (navigator.share && navigator.canShare({ files: [file] })) {
+        try {
+            await navigator.share({
+                files: [file],
+                title: 'di_ther snapshot'
+            });
+        } catch (err) {
+            if (err.name !== 'AbortError') {
+                console.error('Share failed:', err);
+            }
+        }
+    } else {
+        // Fallback: copy to clipboard or alert
+        alert('Sharing not supported on this device. Use Save instead.');
+    }
+}
+
+function saveImage() {
+    if (!currentPreviewData) return;
+
+    const scale = currentSaveScale;
+
+    if (scale === 1) {
+        // Direct download at original size
+        downloadDataUrl(currentPreviewData.dataUrl, currentPreviewData.id);
+    } else {
+        // Scale up with nearest neighbor
+        const img = new Image();
+        img.onload = () => {
+            const scaledCanvas = document.createElement('canvas');
+            scaledCanvas.width = img.width * scale;
+            scaledCanvas.height = img.height * scale;
+            const sctx = scaledCanvas.getContext('2d');
+
+            // Nearest neighbor scaling
+            sctx.imageSmoothingEnabled = false;
+            sctx.drawImage(img, 0, 0, scaledCanvas.width, scaledCanvas.height);
+
+            const scaledUrl = scaledCanvas.toDataURL('image/png');
+            downloadDataUrl(scaledUrl, currentPreviewData.id, scale);
+        };
+        img.src = currentPreviewData.dataUrl;
+    }
+}
+
+function downloadDataUrl(dataUrl, id, scale = 1) {
+    const suffix = scale > 1 ? `-${scale}x` : '';
+    const link = document.createElement('a');
+    link.download = `dither-${id}${suffix}.png`;
+    link.href = dataUrl;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function toggleScaleDropup() {
+    document.getElementById('scaleDropup').classList.toggle('hidden');
+}
+
+function setScale(scale) {
+    currentSaveScale = scale;
+    document.querySelectorAll('.scale-option').forEach(btn => {
+        btn.classList.toggle('active', parseInt(btn.dataset.scale) === scale);
+    });
+    document.getElementById('scaleDropup').classList.add('hidden');
+}
+
+// Preview event listeners
+document.getElementById('previewClose').addEventListener('click', closePreview);
+document.getElementById('shareBtn').addEventListener('click', shareImage);
+document.getElementById('saveBtn').addEventListener('click', saveImage);
+document.getElementById('scaleToggle').addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleScaleDropup();
+});
+
+document.querySelectorAll('.scale-option').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setScale(parseInt(btn.dataset.scale));
+    });
+});
+
+// Close preview on background click
+document.getElementById('previewOverlay').addEventListener('click', (e) => {
+    if (e.target.id === 'previewOverlay' || e.target.classList.contains('preview-image-container')) {
+        closePreview();
+    }
+});
+
+// Close scale dropup when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.save-combo')) {
+        document.getElementById('scaleDropup').classList.add('hidden');
+    }
+});
 
 function openGallery() {
     renderGallery();
