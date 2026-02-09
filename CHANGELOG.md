@@ -2,6 +2,11 @@
 
 > **Commit protocol**: Always update this changelog and the timestamp in `index.html` (line 38) before pushing. Format: `Mon DD, HHMM`
 
+## Feb 09, 0230
+- All sections left-aligned with consistent 6vw left margin
+- Palette grid: full viewport width (removed max-width constraint)
+- Divider, footer left-aligned to match
+
 ## Feb 09, 0200
 - Hero: left-aligned layout, content pushed to bottom-left
 - Tagline: 1.618× vertical spacing between items
