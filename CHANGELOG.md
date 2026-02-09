@@ -2,6 +2,12 @@
 
 > **Commit protocol**: Always update this changelog and the timestamp in `index.html` (line 38) before pushing. Format: `Mon DD, HHMM`
 
+## Feb 09, 0200
+- Hero: left-aligned layout, content pushed to bottom-left
+- Tagline: 1.618× vertical spacing between items
+- Gallery captions: moved below images, two-line format (palette name + bit depth details)
+- Frame restructure: image wrapped in border container, caption outside
+
 ## Feb 09, 0130
 - Palette cards: swatches-first layout, bit depth labels (replaces color count)
 - Pipeline: equal-width boxes on mobile
