@@ -2,6 +2,12 @@
 
 > **Commit protocol**: Always update this changelog and the timestamp in `index.html` (line 38) before pushing. Format: `Mon DD, HHMM`
 
+## Jul 18, 1800
+- Rewrote lens switching: uses zoom constraint on the video track where available (iOS, Samsung)
+- Fallback: tracks can switch lenses instantly via `track.applyConstraints({ advanced: [{ zoom }] })` without restarting stream
+- Zoom-derived lens detection: when `enumerateDevices` reports <2 back cams but track supports zoom, populates lenses from capabilities
+- Each lens now stores a `zoom` value (0.5, 1.0, 2.0) for direct track-level optical switching
+
 ## Jul 18, 1500
 - Landscape layout polish: drop-ups repositioned above toolbar, safe-area inset support added, exposure overlay avoids shutter in landscape
 - Added `env(safe-area-inset-bottom)` fallback padding on toolbar
