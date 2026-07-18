@@ -168,10 +168,25 @@ function switchLens() {
 
     console.log('Switching lens to', currentLens.zoom, currentLens.multiplier);
 
-    // Always restart the stream with zoom baked into constraints.
-    // applyConstraints with zoom is unreliable on iOS (silent no-op on cycle-back).
-    stopCamera();
-    initCamera();
+    // Try applyConstraints on the active track first (instant, no flicker).
+    // This is the only iOS-reliable way to switch optical lenses.
+    const track = video && video.srcObject && video.srcObject.getVideoTracks()[0];
+    if (track && track.getCapabilities && track.getCapabilities().zoom) {
+        track.applyConstraints({ zoom: currentLens.zoom })
+            .then(() => {
+                console.log('Zoom OK');
+                renderLensButton();
+            })
+            .catch(err => {
+                console.warn('Zoom applyConstraints failed, restarting stream:', err);
+                stopCamera();
+                initCameraWithZoom();
+            });
+    } else {
+        // No zoom capability — fall back to deviceId switching
+        stopCamera();
+        initCamera();
+    }
 }
 
 async function initCamera() {
@@ -199,8 +214,8 @@ async function initCamera() {
             if (currentLens.deviceId) {
                 constraints.video.deviceId = { exact: currentLens.deviceId };
             }
-            // Bake zoom into the initial constraint so iOS starts at the right optical step
-            constraints.video.zoom = currentLens.zoom;
+            // Note: zoom baked into getUserMedia constraints is often ignored on iOS.
+            // We apply zoom via track.applyConstraints after stream start below.
         } else {
             constraints.video.facingMode = currentFacingMode;
         }
@@ -213,8 +228,16 @@ async function initCamera() {
         video.srcObject = stream;
         video.play();
 
-        // After permission is granted and stream is active, check zoom capabilities
+        // After stream is live, apply zoom via track-level constraint (works on iOS)
         const track = stream.getVideoTracks()[0];
+        if (track && currentLens && currentLens.zoom && currentLens.zoom !== 1.0) {
+            track.applyConstraints({ zoom: currentLens.zoom }).catch(() => {
+                // Non-fatal — zoom may not be supported
+            });
+        }
+
+        // After permission is granted and stream is active, check zoom capabilities
+        // for lens detection
         if (track && track.getCapabilities) {
             const caps = track.getCapabilities();
             // Only derive zoom lenses on first init or when device enumeration failed
@@ -255,6 +278,16 @@ async function initCamera() {
         console.error('Camera access denied:', err);
         alert('Camera access required. Check permissions.');
     }
+}
+
+// Fallback: init camera without zoom in initial constraints, apply zoom after stream is live.
+// This is the reliable iOS path since getUserMedia ignores zoom at constraint level.
+async function initCameraWithZoom() {
+    videoDevices = []; // Force fresh enumeration
+    currentLens.deviceId = null; // Don't request deviceId — use facingMode for base stream
+    // Run standard init (opens stream at default zoom 1×)
+    // zoom is applied by the post-stream applyConstraints in initCamera
+    await initCamera();
 }
 
 function processFrame() {
