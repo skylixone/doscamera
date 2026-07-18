@@ -164,29 +164,14 @@ function switchLens() {
 
     const idx = backLenses.findIndex(l => l.id === currentLens.id);
     const next = backLenses[(idx + 1) % backLenses.length];
+    currentLens = next;
 
-    // Try zoom-based switching via applyConstraints first (fast, no restart)
-    const track = video && video.srcObject && video.srcObject.getVideoTracks()[0];
-    if (track && track.getCapabilities && track.getCapabilities().zoom) {
-        currentLens = next;
-        console.log('Zooming to', currentLens.zoom, currentLens.multiplier);
+    console.log('Switching lens to', currentLens.zoom, currentLens.multiplier);
 
-        track.applyConstraints({
-            advanced: [{ zoom: currentLens.zoom }]
-        }).then(() => {
-            console.log('Zoom OK');
-            renderLensButton();
-        }).catch(err => {
-            console.warn('Zoom applyConstraints failed, restarting stream:', err);
-            // Fallback: restart stream with zoom baked into constraints
-            stopCamera();
-            initCamera();
-        });
-    } else {
-        currentLens = next;
-        stopCamera();
-        initCamera();
-    }
+    // Always restart the stream with zoom baked into constraints.
+    // applyConstraints with zoom is unreliable on iOS (silent no-op on cycle-back).
+    stopCamera();
+    initCamera();
 }
 
 async function initCamera() {
@@ -232,24 +217,18 @@ async function initCamera() {
         const track = stream.getVideoTracks()[0];
         if (track && track.getCapabilities) {
             const caps = track.getCapabilities();
+            // Only derive zoom lenses on first init or when device enumeration failed
             if (caps.zoom && backLenses.length <= 1 && currentFacingMode === 'environment') {
                 // iOS exposes discrete optical zoom steps via capabilities.
                 // Detect actual available lenses from the zoom range.
                 const { min, max } = caps.zoom;
                 const zooms = [];
                 // Typical optical steps: 0.5 (ultra-wide), 1.0 (wide), 2.0-5.0 (tele)
-                // Only add steps that fall within the actual zoom range
                 const candidates = [0.5, 1.0, 2.0, 3.0, 5.0];
                 candidates.forEach(z => {
-                    if (z >= min && z <= max && !zooms.includes(z)) zooms.push(z);
+                    const rounded = Math.round(z * 10) / 10;
+                    if (rounded >= min && rounded <= max && !zooms.includes(rounded)) zooms.push(rounded);
                 });
-                // If no standard steps fit, populate linearly from min to max
-                if (zooms.length < 2 && max > min + 0.5) {
-                    zooms.length = 0;
-                    for (let z = Math.ceil(min); z <= Math.floor(max); z++) {
-                        zooms.push(z);
-                    }
-                }
                 if (zooms.length >= 2) {
                     backLenses = zooms.map(z => ({
                         id: z < 0.8 ? 'ultra' : z > 1.2 ? 'tele' : 'wide',
@@ -260,7 +239,10 @@ async function initCamera() {
                         zoom: z
                     }));
                     console.log('Zoom-derived lenses from', min, 'to', max, ':', backLenses.map(l => l.multiplier));
-                    currentLens = backLenses.find(l => l.type === 'wide') || backLenses[0];
+                    // Preserve current lens if it matches one of the zoom steps
+                    if (!currentLens || !backLenses.find(l => l.id === currentLens.id)) {
+                        currentLens = backLenses.find(l => l.type === 'wide') || backLenses[0];
+                    }
                     renderLensButton();
                 }
             }
