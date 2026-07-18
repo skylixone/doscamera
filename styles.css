@@ -207,7 +207,7 @@ canvas {
     align-items: center;
     justify-content: flex-start;
     background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.4) 60%, transparent 100%);
-    padding: 16px 12px 32px 12px;
+    padding: 16px 12px calc(12px + env(safe-area-inset-bottom, 20px)) 12px;
     border: none;
     z-index: 10;
 }
@@ -303,8 +303,17 @@ canvas {
 }
 
 .resolution-btn,
-.palette-trigger {
+.palette-trigger,
+.lens-btn {
     color: rgba(255, 255, 255, 0.5);
+}
+
+.lens-btn {
+    min-width: 44px;
+}
+
+.lens-btn.hidden {
+    display: none;
 }
 
 /* ===== SHUTTER BUTTON ===== */
@@ -605,7 +614,7 @@ canvas {
 /* Landscape mode adjustments */
 @media (max-height: 450px) {
     #toolbar {
-        padding: 8px 10px 15px 10px;
+        padding: 8px 10px calc(10px + env(safe-area-inset-bottom, 10px)) 10px;
     }
     
     .toolbar-btn {
@@ -625,6 +634,20 @@ canvas {
     #tempOverlay {
         bottom: 70px;
     }
+
+    /* Move drop-ups above the right-edge shutter in landscape */
+    .dropup {
+        bottom: auto;
+        top: 60px;
+    }
+
+    .dropup-left {
+        left: 12px;
+    }
+
+    .dropup-right {
+        right: 85px; /* avoid shutter */
+    }
     
     /* Shutter button on right edge in landscape */
     #shutterBtn {
@@ -640,5 +663,12 @@ canvas {
     #shutterBtn .shutter-inner {
         width: 40px;
         height: 40px;
+    }
+}
+
+/* Safe area adjustments for very tall notches (iPhone 14 Pro Max etc.) */
+@supports (padding: max(0px)) {
+    #toolbar {
+        padding-bottom: max(12px, env(safe-area-inset-bottom, 20px));
     }
 }

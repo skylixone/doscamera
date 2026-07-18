@@ -2,6 +2,15 @@
 
 > **Commit protocol**: Always update this changelog and the timestamp in `index.html` (line 38) before pushing. Format: `Mon DD, HHMM`
 
+## Jul 18, 1500
+- Landscape layout polish: drop-ups repositioned above toolbar, safe-area inset support added, exposure overlay avoids shutter in landscape
+- Added `env(safe-area-inset-bottom)` fallback padding on toolbar
+
+## Jul 18, 1430
+- Added back-lens switching (0.5× / 1× / 2×) for multi-camera phones
+- Lens button appears only when multiple back cameras are detected
+- Falls back to default camera if selected lens is unavailable
+
 ## Feb 09, 0230
 - All sections left-aligned with consistent 6vw left margin
 - Palette grid: full viewport width (removed max-width constraint)
@@ -65,3 +74,7 @@
 - Blade Runner palettes (classic + neon), Cyberpunk, Noir
 - Cleaner skeletal UI with Geist Mono
 - Title changed to "di_ther"
+
+## Jul 18, 1500
+- Landscape layout polish: drop-ups repositioned above toolbar, safe-area inset support added, exposure overlay avoids shutter in landscape
+- Added `env(safe-area-inset-bottom)` fallback padding on toolbar

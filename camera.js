@@ -8,6 +8,8 @@ let lastFpsUpdate = Date.now();
 // Camera devices
 let videoDevices = [];
 let currentDeviceIndex = 0;
+let backLenses = [];
+let currentLens = null;
 
 // Gesture tracking
 let touchStartX = 0;
@@ -72,9 +74,82 @@ async function enumerateCameras() {
         videoDevices = devices.filter(d => d.kind === 'videoinput');
         console.log('Found cameras:', videoDevices.length);
         videoDevices.forEach((d, i) => console.log(`  [${i}] ${d.label}`));
+        classifyBackLenses();
+        renderLensButton();
     } catch (err) {
         console.error('Failed to enumerate cameras:', err);
     }
+}
+
+function classifyBackLenses() {
+    backLenses = [];
+    const label = d => (d.label || '').toLowerCase();
+
+    // Permission not granted yet if all labels are empty; don't guess
+    if (videoDevices.length > 0 && videoDevices.every(d => !d.label)) {
+        currentLens = null;
+        return;
+    }
+
+    videoDevices.forEach(d => {
+        const l = label(d);
+        const isBack = l.includes('back') || l.includes('environment') || !l.includes('front');
+        if (!isBack) return;
+
+        let type = 'wide';
+        let multiplier = '1×';
+        if (l.includes('ultra') || l.includes('0.5')) {
+            type = 'ultra';
+            multiplier = '0.5×';
+        } else if (l.includes('tele') || l.includes('2x') || l.includes('3x') || l.includes('5x') || l.includes('dual')) {
+            type = 'tele';
+            multiplier = '2×';
+        }
+
+        backLenses.push({ id: type, label: d.label, deviceId: d.deviceId, type, multiplier });
+    });
+
+    // Deduplicate by deviceId, keep first classification
+    const seen = new Set();
+    backLenses = backLenses.filter(l => {
+        if (seen.has(l.deviceId)) return false;
+        seen.add(l.deviceId);
+        return true;
+    });
+
+    // Order: ultra → wide → tele
+    const order = { ultra: 0, wide: 1, tele: 2 };
+    backLenses.sort((a, b) => order[a.type] - order[b.type]);
+
+    // Default to wide, or first available
+    if (!currentLens || !backLenses.find(l => l.id === currentLens.id)) {
+        currentLens = backLenses.find(l => l.type === 'wide') || backLenses[0] || null;
+    }
+
+    console.log('Back lenses:', backLenses.map(l => `${l.type} (${l.multiplier}) ${l.label}`));
+}
+
+function renderLensButton() {
+    const btn = document.getElementById('lensBtn');
+    if (!btn) return;
+
+    if (backLenses.length > 1 && currentFacingMode === 'environment' && currentLens) {
+        btn.textContent = currentLens.multiplier;
+        btn.classList.remove('hidden');
+    } else {
+        btn.classList.add('hidden');
+    }
+}
+
+function switchLens() {
+    if (backLenses.length < 2 || currentFacingMode !== 'environment') return;
+
+    const idx = backLenses.findIndex(l => l.id === currentLens.id);
+    const next = backLenses[(idx + 1) % backLenses.length];
+    currentLens = next;
+
+    stopCamera();
+    initCamera();
 }
 
 async function initCamera() {
@@ -97,14 +172,17 @@ async function initCamera() {
             }
         };
         
-        // Use deviceId if we have multiple cameras and zoom is active
-        if (videoDevices.length > 1 && isZoomed && videoDevices[1]) {
-            constraints.video.deviceId = { exact: videoDevices[1].deviceId };
+        // Prefer selected back lens; fall back to facingMode
+        if (currentLens && currentLens.deviceId && currentFacingMode === 'environment') {
+            constraints.video.deviceId = { exact: currentLens.deviceId };
         } else {
             constraints.video.facingMode = currentFacingMode;
         }
 
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+        // Refresh device labels now that permission is granted
+        await enumerateCameras();
 
         video.srcObject = stream;
         video.play();
@@ -171,6 +249,11 @@ function stopCamera() {
 async function flipCamera() {
     stopCamera();
     currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+    if (currentFacingMode === 'environment') {
+        currentLens = backLenses.find(l => l.type === 'wide') || backLenses[0] || null;
+    } else {
+        currentLens = null;
+    }
     await initCamera();
 }
 
@@ -543,6 +626,12 @@ document.querySelectorAll('.resolution-option').forEach(btn => {
 // Set initial active states
 document.querySelector('.resolution-option[data-res="640"]').classList.add('active');
 document.querySelector('.palette-btn[data-palette="VGA"]').classList.add('active');
+
+// Lens toggle
+document.getElementById('lensBtn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    switchLens();
+});
 
 // Shutter button - save to gallery only (no auto-download)
 document.getElementById('shutterBtn').addEventListener('click', () => {
