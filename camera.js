@@ -165,25 +165,24 @@ function switchLens() {
     const idx = backLenses.findIndex(l => l.id === currentLens.id);
     const next = backLenses[(idx + 1) % backLenses.length];
 
-    // Try zoom-based switching (works on iOS where deviceId is virtual)
+    // Try zoom-based switching via applyConstraints first (fast, no restart)
     const track = video && video.srcObject && video.srcObject.getVideoTracks()[0];
     if (track && track.getCapabilities && track.getCapabilities().zoom) {
         currentLens = next;
-        console.log('Switching lens to', currentLens.multiplier, 'zoom=', currentLens.zoom);
+        console.log('Zooming to', currentLens.zoom, currentLens.multiplier);
 
-        // Use direct zoom constraint (NOT advanced) — more reliable on iOS
-        track.applyConstraints({ zoom: currentLens.zoom })
-            .then(() => {
-                console.log('Zoom OK:', currentLens.zoom);
-                renderLensButton();
-            })
-            .catch(err => {
-                console.warn('Zoom switch failed, restarting stream:', err);
-                stopCamera();
-                initCamera();
-            });
+        track.applyConstraints({
+            advanced: [{ zoom: currentLens.zoom }]
+        }).then(() => {
+            console.log('Zoom OK');
+            renderLensButton();
+        }).catch(err => {
+            console.warn('Zoom applyConstraints failed, restarting stream:', err);
+            // Fallback: restart stream with zoom baked into constraints
+            stopCamera();
+            initCamera();
+        });
     } else {
-        // No zoom capability — restart stream with new lens
         currentLens = next;
         stopCamera();
         initCamera();
@@ -210,9 +209,13 @@ async function initCamera() {
             }
         };
         
-        // Prefer selected back lens; fall back to facingMode
-        if (currentLens && currentLens.deviceId && currentFacingMode === 'environment') {
-            constraints.video.deviceId = { exact: currentLens.deviceId };
+        // Prefer selected back lens or zoom; fall back to facingMode
+        if (currentLens && currentFacingMode === 'environment') {
+            if (currentLens.deviceId) {
+                constraints.video.deviceId = { exact: currentLens.deviceId };
+            }
+            // Bake zoom into the initial constraint so iOS starts at the right optical step
+            constraints.video.zoom = currentLens.zoom;
         } else {
             constraints.video.facingMode = currentFacingMode;
         }
