@@ -98,18 +98,15 @@ function classifyBackLenses() {
 
         let type = 'wide';
         let multiplier = '1×';
-        let zoom = 1.0;
         if (l.includes('ultra') || l.includes('0.5')) {
             type = 'ultra';
             multiplier = '0.5×';
-            zoom = 0.5;
         } else if (l.includes('tele') || l.includes('2x') || l.includes('3x') || l.includes('5x')) {
             type = 'tele';
             multiplier = '2×';
-            zoom = 2.0;
         }
 
-        backLenses.push({ id: type, label: d.label, deviceId: d.deviceId, type, multiplier, zoom });
+        backLenses.push({ id: type, label: d.label, deviceId: d.deviceId, type, multiplier });
     });
 
     // Deduplicate by deviceId, keep first classification
@@ -128,8 +125,7 @@ function classifyBackLenses() {
         backLenses = backLenses.map(l => {
             if (l.type === 'wide' && teleCount < backLenses.length - 1) {
                 teleCount++;
-                // First wide stays wide, subsequent ones become tele (zoom 2.0)
-                return (teleCount === 1) ? l : { ...l, id: 'tele', type: 'tele', multiplier: '2×', zoom: 2.0 };
+                return (teleCount === 1) ? l : { ...l, id: 'tele', type: 'tele', multiplier: '2×' };
             }
             return l;
         });
@@ -139,12 +135,12 @@ function classifyBackLenses() {
     const order = { ultra: 0, wide: 1, tele: 2 };
     backLenses.sort((a, b) => order[a.type] - order[b.type]);
 
-    // Default to wide, or first available
-    if (!currentLens || !backLenses.find(l => l.id === currentLens.id)) {
+    // Preserve current lens if it still exists, otherwise default to wide or first
+    if (!currentLens || !backLenses.find(l => l.deviceId === currentLens.deviceId)) {
         currentLens = backLenses.find(l => l.type === 'wide') || backLenses[0] || null;
     }
 
-    console.log('Back lenses:', backLenses.map(l => `${l.type} (${l.multiplier}, zoom=${l.zoom}) ${l.label}`));
+    console.log('Back lenses:', backLenses.map(l => `${l.type} (${l.multiplier}) ${l.label}`));
 }
 
 function renderLensButton() {
@@ -162,31 +158,14 @@ function renderLensButton() {
 function switchLens() {
     if (backLenses.length < 2 || currentFacingMode !== 'environment') return;
 
-    const idx = backLenses.findIndex(l => l.id === currentLens.id);
+    const idx = backLenses.findIndex(l => l.deviceId === currentLens.deviceId);
     const next = backLenses[(idx + 1) % backLenses.length];
     currentLens = next;
 
-    console.log('Switching lens to', currentLens.zoom, currentLens.multiplier);
+    console.log('Switching to lens:', currentLens.multiplier, currentLens.label);
 
-    // Try applyConstraints on the active track first (instant, no flicker).
-    // This is the only iOS-reliable way to switch optical lenses.
-    const track = video && video.srcObject && video.srcObject.getVideoTracks()[0];
-    if (track && track.getCapabilities && track.getCapabilities().zoom) {
-        track.applyConstraints({ zoom: currentLens.zoom })
-            .then(() => {
-                console.log('Zoom OK');
-                renderLensButton();
-            })
-            .catch(err => {
-                console.warn('Zoom applyConstraints failed, restarting stream:', err);
-                stopCamera();
-                initCameraWithZoom();
-            });
-    } else {
-        // No zoom capability — fall back to deviceId switching
-        stopCamera();
-        initCamera();
-    }
+    stopCamera();
+    initCamera();
 }
 
 async function initCamera() {
@@ -209,13 +188,9 @@ async function initCamera() {
             }
         };
         
-        // Prefer selected back lens or zoom; fall back to facingMode
-        if (currentLens && currentFacingMode === 'environment') {
-            if (currentLens.deviceId) {
-                constraints.video.deviceId = { exact: currentLens.deviceId };
-            }
-            // Note: zoom baked into getUserMedia constraints is often ignored on iOS.
-            // We apply zoom via track.applyConstraints after stream start below.
+        // Prefer selected back lens; fall back to facingMode
+        if (currentLens && currentLens.deviceId && currentFacingMode === 'environment') {
+            constraints.video.deviceId = { exact: currentLens.deviceId };
         } else {
             constraints.video.facingMode = currentFacingMode;
         }
@@ -228,49 +203,6 @@ async function initCamera() {
         video.srcObject = stream;
         video.play();
 
-        // After stream is live, apply zoom via track-level constraint (works on iOS)
-        const track = stream.getVideoTracks()[0];
-        if (track && currentLens && currentLens.zoom && currentLens.zoom !== 1.0) {
-            track.applyConstraints({ zoom: currentLens.zoom }).catch(() => {
-                // Non-fatal — zoom may not be supported
-            });
-        }
-
-        // After permission is granted and stream is active, check zoom capabilities
-        // for lens detection
-        if (track && track.getCapabilities) {
-            const caps = track.getCapabilities();
-            // Only derive zoom lenses on first init or when device enumeration failed
-            if (caps.zoom && backLenses.length <= 1 && currentFacingMode === 'environment') {
-                // iOS exposes discrete optical zoom steps via capabilities.
-                // Detect actual available lenses from the zoom range.
-                const { min, max } = caps.zoom;
-                const zooms = [];
-                // Typical optical steps: 0.5 (ultra-wide), 1.0 (wide), 2.0-5.0 (tele)
-                const candidates = [0.5, 1.0, 2.0, 3.0, 5.0];
-                candidates.forEach(z => {
-                    const rounded = Math.round(z * 10) / 10;
-                    if (rounded >= min && rounded <= max && !zooms.includes(rounded)) zooms.push(rounded);
-                });
-                if (zooms.length >= 2) {
-                    backLenses = zooms.map(z => ({
-                        id: z < 0.8 ? 'ultra' : z > 1.2 ? 'tele' : 'wide',
-                        label: z + '×',
-                        deviceId: null,
-                        type: z < 0.8 ? 'ultra' : z > 1.2 ? 'tele' : 'wide',
-                        multiplier: (z < 1 ? '0.5×' : z === 1 ? '1×' : Math.round(z) + '×'),
-                        zoom: z
-                    }));
-                    console.log('Zoom-derived lenses from', min, 'to', max, ':', backLenses.map(l => l.multiplier));
-                    // Preserve current lens if it matches one of the zoom steps
-                    if (!currentLens || !backLenses.find(l => l.id === currentLens.id)) {
-                        currentLens = backLenses.find(l => l.type === 'wide') || backLenses[0];
-                    }
-                    renderLensButton();
-                }
-            }
-        }
-
         video.onloadedmetadata = () => {
             processFrame();
         };
@@ -278,16 +210,6 @@ async function initCamera() {
         console.error('Camera access denied:', err);
         alert('Camera access required. Check permissions.');
     }
-}
-
-// Fallback: init camera without zoom in initial constraints, apply zoom after stream is live.
-// This is the reliable iOS path since getUserMedia ignores zoom at constraint level.
-async function initCameraWithZoom() {
-    videoDevices = []; // Force fresh enumeration
-    currentLens.deviceId = null; // Don't request deviceId — use facingMode for base stream
-    // Run standard init (opens stream at default zoom 1×)
-    // zoom is applied by the post-stream applyConstraints in initCamera
-    await initCamera();
 }
 
 function processFrame() {
