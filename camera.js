@@ -164,23 +164,27 @@ function switchLens() {
 
     const idx = backLenses.findIndex(l => l.id === currentLens.id);
     const next = backLenses[(idx + 1) % backLenses.length];
-    currentLens = next;
 
-    // Try zoom-based switching first (works on iOS where deviceId is virtual)
+    // Try zoom-based switching (works on iOS where deviceId is virtual)
     const track = video && video.srcObject && video.srcObject.getVideoTracks()[0];
     if (track && track.getCapabilities && track.getCapabilities().zoom) {
-        track.applyConstraints({ advanced: [{ zoom: currentLens.zoom }] })
+        currentLens = next;
+        console.log('Switching lens to', currentLens.multiplier, 'zoom=', currentLens.zoom);
+
+        // Use direct zoom constraint (NOT advanced) — more reliable on iOS
+        track.applyConstraints({ zoom: currentLens.zoom })
             .then(() => {
-                console.log('Zoom switched to', currentLens.zoom, currentLens.multiplier);
+                console.log('Zoom OK:', currentLens.zoom);
                 renderLensButton();
             })
             .catch(err => {
-                console.warn('Zoom switch failed, falling back to stream restart:', err);
+                console.warn('Zoom switch failed, restarting stream:', err);
                 stopCamera();
                 initCamera();
             });
     } else {
         // No zoom capability — restart stream with new lens
+        currentLens = next;
         stopCamera();
         initCamera();
     }
@@ -226,21 +230,33 @@ async function initCamera() {
         if (track && track.getCapabilities) {
             const caps = track.getCapabilities();
             if (caps.zoom && backLenses.length <= 1 && currentFacingMode === 'environment') {
-                // iOS exposes optical zoom steps via capabilities even when
-                // enumerateDevices only reports one back camera.
-                // Use typical zoom values: 0.5 (ultra), 1.0 (wide), 2.0+ (tele)
-                const zooms = [0.5, 1.0, 2.0];
-                const available = zooms.filter(z => z >= caps.zoom.min && z <= caps.zoom.max);
-                if (available.length > 1) {
-                    backLenses = available.map(z => ({
-                        id: z === 0.5 ? 'ultra' : z > 1.0 ? 'tele' : 'wide',
+                // iOS exposes discrete optical zoom steps via capabilities.
+                // Detect actual available lenses from the zoom range.
+                const { min, max } = caps.zoom;
+                const zooms = [];
+                // Typical optical steps: 0.5 (ultra-wide), 1.0 (wide), 2.0-5.0 (tele)
+                // Only add steps that fall within the actual zoom range
+                const candidates = [0.5, 1.0, 2.0, 3.0, 5.0];
+                candidates.forEach(z => {
+                    if (z >= min && z <= max && !zooms.includes(z)) zooms.push(z);
+                });
+                // If no standard steps fit, populate linearly from min to max
+                if (zooms.length < 2 && max > min + 0.5) {
+                    zooms.length = 0;
+                    for (let z = Math.ceil(min); z <= Math.floor(max); z++) {
+                        zooms.push(z);
+                    }
+                }
+                if (zooms.length >= 2) {
+                    backLenses = zooms.map(z => ({
+                        id: z < 0.8 ? 'ultra' : z > 1.2 ? 'tele' : 'wide',
                         label: z + '×',
                         deviceId: null,
-                        type: z === 0.5 ? 'ultra' : z > 1.0 ? 'tele' : 'wide',
-                        multiplier: z === 0.5 ? '0.5×' : z === 1.0 ? '1×' : '2×',
+                        type: z < 0.8 ? 'ultra' : z > 1.2 ? 'tele' : 'wide',
+                        multiplier: (z < 1 ? '0.5×' : z === 1 ? '1×' : Math.round(z) + '×'),
                         zoom: z
                     }));
-                    console.log('Zoom-derived lenses:', backLenses.map(l => `${l.multiplier}`));
+                    console.log('Zoom-derived lenses from', min, 'to', max, ':', backLenses.map(l => l.multiplier));
                     currentLens = backLenses.find(l => l.type === 'wide') || backLenses[0];
                     renderLensButton();
                 }
