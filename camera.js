@@ -101,7 +101,7 @@ function classifyBackLenses() {
         if (l.includes('ultra') || l.includes('0.5')) {
             type = 'ultra';
             multiplier = '0.5×';
-        } else if (l.includes('tele') || l.includes('2x') || l.includes('3x') || l.includes('5x') || l.includes('dual')) {
+        } else if (l.includes('tele') || l.includes('2x') || l.includes('3x') || l.includes('5x')) {
             type = 'tele';
             multiplier = '2×';
         }
@@ -116,6 +116,21 @@ function classifyBackLenses() {
         seen.add(l.deviceId);
         return true;
     });
+
+    // iPhone often labels both wide and tele lenses as "Back Camera".
+    // If we have >1 back lens but only 1 wide-classified, reclassify extras.
+    const wideCount = backLenses.filter(l => l.type === 'wide').length;
+    if (backLenses.length > 1 && wideCount > 1) {
+        let teleCount = 0;
+        backLenses = backLenses.map(l => {
+            if (l.type === 'wide' && teleCount < backLenses.length - 1) {
+                // Keep the first wide as-is, reclassify subsequent widest into candidates
+                teleCount++;
+                return (teleCount === 1) ? l : { ...l, id: 'tele', type: 'tele', multiplier: '2×' };
+            }
+            return l;
+        });
+    }
 
     // Order: ultra → wide → tele
     const order = { ultra: 0, wide: 1, tele: 2 };
