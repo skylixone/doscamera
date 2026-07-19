@@ -201,11 +201,14 @@ async function initCamera() {
         await enumerateCameras();
 
         video.srcObject = stream;
-        video.play();
-
         video.onloadedmetadata = () => {
+            video.play();
             processFrame();
         };
+        // If metadata already loaded (e.g. cached stream), fire manually
+        if (video.readyState >= 1) {
+            video.onloadedmetadata();
+        }
     } catch (err) {
         console.error('Camera access denied:', err);
         alert('Camera access required. Check permissions.');
