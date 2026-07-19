@@ -158,6 +158,24 @@ function renderLensButton() {
     }
 }
 
+function reapplyZoom() {
+    const track = video && video.srcObject && video.srcObject.getVideoTracks()[0];
+    if (!track || !currentLens || currentFacingMode !== 'environment') return;
+
+    // iOS applyConstraints with zoom can be idempotent (same value = no-op).
+    // Applying a slightly different intermediate first forces the switch.
+    const target = currentLens.zoom;
+    const settings = track.getSettings && track.getSettings();
+    if (settings && settings.zoom !== undefined && Math.abs(settings.zoom - target) > 0.01) {
+        // Set to an intermediate value first, then to target
+        track.applyConstraints({ advanced: [{ zoom: 1.0 }] })
+            .then(() => track.applyConstraints({ advanced: [{ zoom: target }] }))
+            .catch(() => track.applyConstraints({ advanced: [{ zoom: target }] }));
+    } else {
+        track.applyConstraints({ advanced: [{ zoom: target }] }).catch(() => {});
+    }
+}
+
 function switchLens() {
     if (backLenses.length < 2 || currentFacingMode !== 'environment') return;
 
@@ -166,23 +184,8 @@ function switchLens() {
     currentLens = next;
 
     console.log('Switching to lens:', currentLens.multiplier, 'zoom:', currentLens.zoom);
-
-    // Try zoom-based switching on the live track (no restart = no FPS drop, no re-prompt)
-    const track = video && video.srcObject && video.srcObject.getVideoTracks()[0];
-    if (track) {
-        track.applyConstraints({ advanced: [{ zoom: currentLens.zoom }] })
-            .then(() => {
-                renderLensButton();
-            })
-            .catch(() => {
-                // Fallback: restart stream with different deviceId
-                stopCamera();
-                initCamera();
-            });
-    } else {
-        stopCamera();
-        initCamera();
-    }
+    reapplyZoom();
+    renderLensButton();
 }
 
 async function initCamera() {
@@ -241,6 +244,9 @@ async function initCamera() {
         }
 
         renderLensButton();
+
+        // Apply the current zoom on this fresh stream (resolution change, flip, first init)
+        reapplyZoom();
 
         video.srcObject = stream;
         video.onloadedmetadata = () => {
