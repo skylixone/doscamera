@@ -162,18 +162,14 @@ function reapplyZoom() {
     const track = video && video.srcObject && video.srcObject.getVideoTracks()[0];
     if (!track || !currentLens || currentFacingMode !== 'environment') return;
 
-    // iOS applyConstraints with zoom can be idempotent (same value = no-op).
-    // Applying a slightly different intermediate first forces the switch.
     const target = currentLens.zoom;
-    const settings = track.getSettings && track.getSettings();
-    if (settings && settings.zoom !== undefined && Math.abs(settings.zoom - target) > 0.01) {
-        // Set to an intermediate value first, then to target
-        track.applyConstraints({ advanced: [{ zoom: 1.0 }] })
-            .then(() => track.applyConstraints({ advanced: [{ zoom: target }] }))
-            .catch(() => track.applyConstraints({ advanced: [{ zoom: target }] }));
-    } else {
-        track.applyConstraints({ advanced: [{ zoom: target }] }).catch(() => {});
-    }
+
+    // iOS applyConstraints with zoom can be idempotent (same value = no-op).
+    // To force a switch, always apply a small bump first, then the target.
+    const bump = target === 2.0 ? 1.0 : target + 0.01;
+    track.applyConstraints({ advanced: [{ zoom: bump }] })
+        .then(() => track.applyConstraints({ advanced: [{ zoom: target }] }))
+        .catch(() => track.applyConstraints({ advanced: [{ zoom: target }] }));
 }
 
 function switchLens() {
