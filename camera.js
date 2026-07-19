@@ -98,15 +98,18 @@ function classifyBackLenses() {
 
         let type = 'wide';
         let multiplier = '1×';
+        let zoom = 1.0;
         if (l.includes('ultra') || l.includes('0.5')) {
             type = 'ultra';
             multiplier = '0.5×';
+            zoom = 0.5;
         } else if (l.includes('tele') || l.includes('2x') || l.includes('3x') || l.includes('5x')) {
             type = 'tele';
             multiplier = '2×';
+            zoom = 2.0;
         }
 
-        backLenses.push({ id: type, label: d.label, deviceId: d.deviceId, type, multiplier });
+        backLenses.push({ id: type, label: d.label, deviceId: d.deviceId, type, multiplier, zoom });
     });
 
     // Deduplicate by deviceId, keep first classification
@@ -125,7 +128,7 @@ function classifyBackLenses() {
         backLenses = backLenses.map(l => {
             if (l.type === 'wide' && teleCount < backLenses.length - 1) {
                 teleCount++;
-                return (teleCount === 1) ? l : { ...l, id: 'tele', type: 'tele', multiplier: '2×' };
+                return (teleCount === 1) ? l : { ...l, id: 'tele', type: 'tele', multiplier: '2×', zoom: 2.0 };
             }
             return l;
         });
@@ -158,14 +161,28 @@ function renderLensButton() {
 function switchLens() {
     if (backLenses.length < 2 || currentFacingMode !== 'environment') return;
 
-    const idx = backLenses.findIndex(l => l.deviceId === currentLens.deviceId);
+    const idx = backLenses.findIndex(l => l.id === currentLens.id);
     const next = backLenses[(idx + 1) % backLenses.length];
     currentLens = next;
 
-    console.log('Switching to lens:', currentLens.multiplier, currentLens.label);
+    console.log('Switching to lens:', currentLens.multiplier, 'zoom:', currentLens.zoom);
 
-    stopCamera();
-    initCamera();
+    // Try zoom-based switching on the live track (no restart = no FPS drop, no re-prompt)
+    const track = video && video.srcObject && video.srcObject.getVideoTracks()[0];
+    if (track) {
+        track.applyConstraints({ advanced: [{ zoom: currentLens.zoom }] })
+            .then(() => {
+                renderLensButton();
+            })
+            .catch(() => {
+                // Fallback: restart stream with different deviceId
+                stopCamera();
+                initCamera();
+            });
+    } else {
+        stopCamera();
+        initCamera();
+    }
 }
 
 async function initCamera() {
@@ -188,17 +205,42 @@ async function initCamera() {
             }
         };
         
-        // Prefer selected back lens; fall back to facingMode
-        if (currentLens && currentLens.deviceId && currentFacingMode === 'environment') {
-            constraints.video.deviceId = { exact: currentLens.deviceId };
-        } else {
-            constraints.video.facingMode = currentFacingMode;
-        }
+        // Use facingMode to avoid iOS permission re-prompt on every deviceId switch.
+        // Lens switching is done via zoom applyConstraints on the live track.
+        constraints.video.facingMode = currentFacingMode;
 
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
         // Refresh device labels now that permission is granted
         await enumerateCameras();
+
+        // After stream is live, check zoom capabilities for lens detection
+        // (only on first init when device enumeration returned <2 back lenses)
+        const track = stream.getVideoTracks()[0];
+        if (track && track.getCapabilities && backLenses.length <= 1 && currentFacingMode === 'environment') {
+            const caps = track.getCapabilities();
+            if (caps.zoom && caps.zoom.min !== undefined && caps.zoom.max !== undefined) {
+                const { min, max } = caps.zoom;
+                const candidates = [0.5, 1.0, 2.0, 3.0, 5.0];
+                const zooms = candidates.filter(z => Math.round(z * 10) / 10 >= min && Math.round(z * 10) / 10 <= max);
+                if (zooms.length >= 2) {
+                    backLenses = zooms.map(z => ({
+                        id: z < 0.8 ? 'ultra' : z > 1.2 ? 'tele' : 'wide',
+                        label: z + '×',
+                        deviceId: null,
+                        type: z < 0.8 ? 'ultra' : z > 1.2 ? 'tele' : 'wide',
+                        multiplier: (z < 1 ? '0.5×' : z === 1 ? '1×' : Math.round(z) + '×'),
+                        zoom: z
+                    }));
+                    console.log('Zoom-derived lenses from', min, 'to', max, ':', backLenses.map(l => l.multiplier));
+                    if (!currentLens || !backLenses.find(l => l.id === currentLens.id)) {
+                        currentLens = backLenses.find(l => l.type === 'wide') || backLenses[0];
+                    }
+                }
+            }
+        }
+
+        renderLensButton();
 
         video.srcObject = stream;
         video.onloadedmetadata = () => {
