@@ -120,6 +120,8 @@ function classifyBackLenses() {
         seenMultiplier.add(l.multiplier);
         return true;
     });
+    // Only keep 0.5×, 1×, 2×
+    backLenses = backLenses.filter(l => ['0.5×', '1×', '2×'].includes(l.multiplier));
     const order = { ultra: 0, wide: 1, tele: 2 };
     backLenses.sort((a, b) => {
         const typeDiff = order[a.type] - order[b.type];
