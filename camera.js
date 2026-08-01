@@ -89,9 +89,10 @@ function classifyBackLenses() {
         if (l.includes('ultra') || l.includes('0.5')) {
             type = 'ultra';
             multiplier = '0.5×';
-        } else if (l.includes('tele') || l.includes('2x') || l.includes('3x') || l.includes('5x')) {
+        } else if (l.includes('tele') || /[0-9]+x/.test(l)) {
             type = 'tele';
-            multiplier = '2×';
+            const match = l.match(/([0-9]+)x/);
+            multiplier = match ? match[1] + '×' : '2×';
         }
         backLenses.push({ id: type, label: d.label, deviceId: d.deviceId, type, multiplier });
     });
@@ -107,11 +108,18 @@ function classifyBackLenses() {
         backLenses = backLenses.map(l => {
             if (l.type === 'wide' && teleCount < backLenses.length - 1) {
                 teleCount++;
-                return (teleCount === 1) ? l : { ...l, id: 'tele', type: 'tele', multiplier: '2×' };
+                return (teleCount === 1) ? l : { ...l, id: 'tele', type: 'tele', multiplier: (teleCount + 1) + '×' };
             }
             return l;
         });
     }
+    // Deduplicate by multiplier — keep first occurrence of each zoom level
+    const seenMultiplier = new Set();
+    backLenses = backLenses.filter(l => {
+        if (seenMultiplier.has(l.multiplier)) return false;
+        seenMultiplier.add(l.multiplier);
+        return true;
+    });
     const order = { ultra: 0, wide: 1, tele: 2 };
     backLenses.sort((a, b) => order[a.type] - order[b.type]);
     if (!currentLens || !backLenses.find(l => l.deviceId === currentLens.deviceId)) {
