@@ -121,7 +121,11 @@ function classifyBackLenses() {
         return true;
     });
     const order = { ultra: 0, wide: 1, tele: 2 };
-    backLenses.sort((a, b) => order[a.type] - order[b.type]);
+    backLenses.sort((a, b) => {
+        const typeDiff = order[a.type] - order[b.type];
+        if (typeDiff !== 0) return typeDiff;
+        return parseFloat(a.multiplier) - parseFloat(b.multiplier);
+    });
     if (!currentLens || !backLenses.find(l => l.deviceId === currentLens.deviceId)) {
         currentLens = backLenses.find(l => l.type === 'wide') || backLenses[0] || null;
     }
@@ -153,6 +157,8 @@ function renderLensSegmented() {
     }
 }
 
+let cameraInitLock = false;
+
 function switchLens(idx) {
     if (backLenses.length < 2 || currentFacingMode !== 'environment') return;
     const lens = backLenses[idx];
@@ -164,6 +170,9 @@ function switchLens(idx) {
 }
 
 async function initCamera() {
+    if (cameraInitLock) return;
+    cameraInitLock = true;
+    try {
     video = document.getElementById('video');
     canvas = document.getElementById('canvas');
     ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -197,6 +206,9 @@ async function initCamera() {
     } catch (err) {
         console.error('Camera access denied:', err);
         alert('Camera access required. Check permissions.');
+    }
+    } finally {
+        cameraInitLock = false;
     }
 }
 
