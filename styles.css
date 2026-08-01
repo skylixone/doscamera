@@ -352,7 +352,7 @@ canvas {
 
 #shutterBtn {
     position: fixed;
-    bottom:-34px;
+    bottom: -74px;
     left: 50%;
     transform: translateX(-50%);
     width: 80px;
@@ -634,7 +634,7 @@ canvas {
     #shutterBtn {
         width: 70px;
         height: 70px;
-        bottom: 85px;
+        bottom: 56px;
     }
     
     #shutterBtn .shutter-inner {
